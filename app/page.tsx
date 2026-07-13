@@ -117,7 +117,7 @@ export default function HomePage() {
               キャラクターシート
             </h1>
             <div className="flex items-center gap-2 flex-wrap">
-              <GistSync onSynced={() => setCharacters(loadCharacters())} onToast={addToast} />
+              <GistSync data={allData} onSynced={() => setCharacters(loadCharacters())} onToast={addToast} />
               <ImportExport data={allData} onImport={handleImport} onToast={addToast} />
               <Link
                 href="/characters/new"

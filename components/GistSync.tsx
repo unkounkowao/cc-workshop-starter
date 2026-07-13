@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { saveToGist, loadFromGist } from '@/lib/gist'
 import { loadData, saveData } from '@/lib/storage'
 import { DATA_VERSION } from '@/lib/constants'
@@ -9,15 +9,61 @@ const TOKEN_KEY = 'novel-cs-gist-token'
 const GIST_ID_KEY = 'novel-cs-gist-id'
 
 type Props = {
+  data: CharacterSheetData
   onSynced: () => void
   onToast: (msg: string, type: 'success' | 'error' | 'warning') => void
 }
 
-export default function GistSync({ onSynced, onToast }: Props) {
+export default function GistSync({ data, onSynced, onToast }: Props) {
   const [open, setOpen] = useState(false)
   const [token, setToken] = useState('')
   const [gistId, setGistId] = useState('')
   const [loading, setLoading] = useState(false)
+  const isFirstRender = useRef(true)
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // 起動時に自動読み込み
+  useEffect(() => {
+    const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
+    const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
+    if (!savedToken || !savedGistId) return
+
+    loadFromGist(savedToken, savedGistId)
+      .then((loaded) => {
+        saveData({ ...loaded, version: DATA_VERSION })
+        onSynced()
+        onToast('Gistからデータを自動読み込みしました', 'success')
+      })
+      .catch(() => {
+        // 自動読み込み失敗は無視
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // データ変更時に自動保存（5秒デバウンス）
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
+    const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
+    if (!savedToken || !savedGistId) return
+
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(async () => {
+      try {
+        await saveToGist(savedToken, savedGistId, data)
+        onToast('Gistに自動保存しました', 'success')
+      } catch {
+        // 自動保存失敗は無視
+      }
+    }, 5000)
+
+    return () => {
+      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    }
+  }, [data, onToast])
 
   useEffect(() => {
     setToken(localStorage.getItem(TOKEN_KEY) ?? '')
@@ -36,8 +82,8 @@ export default function GistSync({ onSynced, onToast }: Props) {
     }
     setLoading(true)
     try {
-      const data = loadData()
-      const newId = await saveToGist(token.trim(), gistId.trim() || null, data)
+      const currentData = loadData()
+      const newId = await saveToGist(token.trim(), gistId.trim() || null, currentData)
       setGistId(newId)
       localStorage.setItem(TOKEN_KEY, token.trim())
       localStorage.setItem(GIST_ID_KEY, newId)
@@ -63,10 +109,10 @@ export default function GistSync({ onSynced, onToast }: Props) {
     setLoading(true)
     try {
       saveSettings()
-      const data: CharacterSheetData = await loadFromGist(token.trim(), gistId.trim())
-      saveData({ ...data, version: DATA_VERSION })
+      const loaded: CharacterSheetData = await loadFromGist(token.trim(), gistId.trim())
+      saveData({ ...loaded, version: DATA_VERSION })
       onSynced()
-      onToast(`${data.characters.length}件のデータをGistから読み込みました`, 'success')
+      onToast(`${loaded.characters.length}件のデータをGistから読み込みました`, 'success')
       setOpen(false)
     } catch (e) {
       onToast(e instanceof Error ? e.message : 'Gist読み込みに失敗しました', 'error')
@@ -105,6 +151,7 @@ export default function GistSync({ onSynced, onToast }: Props) {
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-5 leading-relaxed">
                 GitHub Gist を使ってデバイス間でデータを共有します。
                 PAT と Gist ID は、各デバイスのブラウザにのみ保存されます。
+                設定済みの場合はページを開くと自動読み込み、データ変更後5秒で自動保存します。
               </p>
 
               {/* PAT入力 */}
@@ -154,10 +201,10 @@ export default function GistSync({ onSynced, onToast }: Props) {
 
               {/* 使い方ガイド */}
               <div className="mb-5 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-xs text-indigo-800 dark:text-indigo-300 leading-relaxed">
-                <p className="font-medium mb-1">同期手順</p>
+                <p className="font-medium mb-1">初回設定手順</p>
                 <p>① PCで「Gistに保存」→ Gist IDをコピー</p>
-                <p>② スマホで同じPAT + Gist IDを入力</p>
-                <p>③ スマホで「Gistから読み込み」</p>
+                <p>② スマホで同じPAT + Gist IDを入力して「Gistから読み込み」</p>
+                <p>③ 以降はページを開くと自動同期</p>
               </div>
 
               {/* ボタン */}

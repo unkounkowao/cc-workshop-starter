@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__lros__search_queries",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); servers=d.get\\(''mcpServers'',{}\\); lros=servers.get\\(''lros'',{}\\); print\\(json.dumps\\(lros, indent=2\\)\\)\")",
+      "Bash(curl:*)",
+      "Bash(head:*)",
+      "Bash(python3:*)",
+      "mcp__slack__slack_list_channels",
+      "mcp__claude_ai_Notion__notion-search",
+      "mcp__slack__slack_get_channel_history",
+      "mcp__claude_ai_Notion__notion-fetch",
+      "mcp__claude_ai_Notion__notion-create-pages",
+      "mcp__slack__slack_get_users",
+      "mcp__claude_ai_Notion__notion-update-page",
+      "mcp__slack__slack_get_thread_replies",
+      "mcp__claude_ai_Notion__notion-update-view",
+      "Bash(schtasks:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(ls:*)",
+      "mcp__lros__get_query_result",
+      "Bash(cd /c/Users/user/cc-workshop-starter && npm run typecheck 2>&1)",
+      "Bash(cd /c/Users/user/cc-workshop-starter && npm run test 2>&1)",
+      "Bash(cd /c/Users/user/cc-workshop-starter && npx next build --no-lint 2>&1)",
+      "Bash(rm -rf /c/Users/user/cc-workshop-starter/.next && cd /c/Users/user/cc-workshop-starter && npx next build --no-lint 2>&122222)",
+      "Bash(cat:*)",
+      "Bash(xxd:*)",
+      "Bash(grep:*)",
+      "Bash(cd:*)",
+      "Bash(taskkill:*)",
+      "Bash(gh auth:*)",
+      "Bash(git push:*)",
+      "Bash(gh api:*)"
+    ]
+  }
+}
