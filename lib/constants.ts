@@ -24,6 +24,8 @@ export const CHARACTER_FIELD_LABELS: Record<string, string> = {
   birthday: '誕生日',
   height: '身長',
   imageMotif: 'イメージモチーフ',
+  imageSong: 'イメソン',
+  imageSongUrl: 'イメソン リンク',
   theme: 'テーマ',
   summary: '概要',
   personality: '性格',

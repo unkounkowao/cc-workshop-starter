@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { validateCharacter, isValidHex, normalizeHex } from '@/lib/validation'
 import { generateId, now } from '@/lib/utils'
 import { CHARACTER_FIELD_LABELS, SHORT_TEXT_FIELDS, LONG_TEXT_FIELDS } from '@/lib/constants'
@@ -23,6 +23,8 @@ type FormState = {
   height: string
   imageColors: ImageColor[]
   imageMotif: string
+  imageSong: string
+  imageSongUrl: string
   theme: string
   summary: string
   personality: string
@@ -46,6 +48,8 @@ function characterToForm(char: Character): FormState {
     height: char.height ?? '',
     imageColors: char.imageColors ?? [],
     imageMotif: char.imageMotif ?? '',
+    imageSong: char.imageSong ?? '',
+    imageSongUrl: char.imageSongUrl ?? '',
     theme: char.theme ?? '',
     summary: char.summary ?? '',
     personality: char.personality ?? '',
@@ -69,6 +73,8 @@ const emptyForm: FormState = {
   height: '',
   imageColors: [],
   imageMotif: '',
+  imageSong: '',
+  imageSongUrl: '',
   theme: '',
   summary: '',
   personality: '',
@@ -192,6 +198,8 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
         height: form.height.trim() || undefined,
         imageColors: normalizedColors,
         imageMotif: form.imageMotif.trim() || undefined,
+        imageSong: form.imageSong.trim() || undefined,
+        imageSongUrl: form.imageSongUrl.trim() || undefined,
         theme: form.theme.trim() || undefined,
         summary: form.summary.trim() || undefined,
         personality: form.personality.trim() || undefined,
@@ -333,28 +341,65 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
         </legend>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {LONG_TEXT_FIELDS.map((field) => (
-            <div
-              key={field}
-              className={
-                ['past', 'relationshipsAndFamily', 'actionsInStory', 'changeAndEnding', 'other'].includes(field)
-                  ? 'lg:col-span-2'
-                  : ''
-              }
-            >
-              <label
-                htmlFor={`field-${field}`}
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            <React.Fragment key={field}>
+              <div
+                className={
+                  ['past', 'relationshipsAndFamily', 'actionsInStory', 'changeAndEnding', 'other'].includes(field)
+                    ? 'lg:col-span-2'
+                    : ''
+                }
               >
-                {CHARACTER_FIELD_LABELS[field]}
-              </label>
-              <textarea
-                id={`field-${field}`}
-                value={form[field] as string}
-                onChange={(e) => update(field, e.target.value)}
-                rows={field === 'imageMotif' ? 2 : 4}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y leading-relaxed"
-              />
-            </div>
+                <label
+                  htmlFor={`field-${field}`}
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  {CHARACTER_FIELD_LABELS[field]}
+                </label>
+                <textarea
+                  id={`field-${field}`}
+                  value={form[field] as string}
+                  onChange={(e) => update(field, e.target.value)}
+                  rows={field === 'imageMotif' ? 2 : 4}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y leading-relaxed"
+                />
+              </div>
+              {field === 'imageMotif' && (
+                <>
+                  <div>
+                    <label
+                      htmlFor="field-imageSong"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      {CHARACTER_FIELD_LABELS.imageSong}
+                    </label>
+                    <input
+                      id="field-imageSong"
+                      type="text"
+                      value={form.imageSong}
+                      onChange={(e) => update('imageSong', e.target.value)}
+                      placeholder="曲名"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="field-imageSongUrl"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                    >
+                      {CHARACTER_FIELD_LABELS.imageSongUrl}
+                    </label>
+                    <input
+                      id="field-imageSongUrl"
+                      type="url"
+                      value={form.imageSongUrl}
+                      onChange={(e) => update('imageSongUrl', e.target.value)}
+                      placeholder="https://..."
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
+                    />
+                  </div>
+                </>
+              )}
+            </React.Fragment>
           ))}
         </div>
       </fieldset>

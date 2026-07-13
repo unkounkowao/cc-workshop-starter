@@ -16,6 +16,8 @@ export type Character = {
   height?: string
   imageColors: ImageColor[]
   imageMotif?: string
+  imageSong?: string
+  imageSongUrl?: string
   theme?: string
   summary?: string
   personality?: string
