@@ -20,6 +20,7 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
   const [gistId, setGistId] = useState('')
   const [loading, setLoading] = useState(false)
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingData = useRef<CharacterSheetData | null>(null)
 
   // Gistが新しければ自動読み込み
   const autoLoad = () => {
@@ -44,25 +45,41 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
       .catch(() => {})
   }
 
-  // 起動時・タブがアクティブになったときに自動読み込み
+  // 起動時・タブがアクティブになったときに自動読み込み、非アクティブ時に即時保存
   useEffect(() => {
     autoLoad()
-    const onVisibility = () => { if (document.visibilityState === 'visible') autoLoad() }
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        autoLoad()
+      } else {
+        // タブを離れるとき、未保存データがあれば即時保存
+        const d = pendingData.current
+        if (!d) return
+        const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
+        const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
+        if (!savedToken || !savedGistId) return
+        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+        pendingData.current = null
+        saveToGist(savedToken, savedGistId, d).catch(() => {})
+      }
+    }
     document.addEventListener('visibilitychange', onVisibility)
     return () => document.removeEventListener('visibilitychange', onVisibility)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // データ変更時に自動保存（5秒デバウンス）
+  // データ変更時に自動保存（5秒デバウンス、離脱時即時保存）
   useEffect(() => {
     const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
     const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
     if (!savedToken || !savedGistId) return
 
+    pendingData.current = data
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
     autoSaveTimer.current = setTimeout(async () => {
       try {
         await saveToGist(savedToken, savedGistId, data)
+        pendingData.current = null
       } catch {
         // 自動保存失敗は無視
       }
