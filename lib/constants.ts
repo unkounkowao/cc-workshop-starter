@@ -1,5 +1,6 @@
 // LocalStorage キー
 export const STORAGE_KEY = 'novel-character-sheet-data'
+export const LAST_MODIFIED_KEY = 'novel-character-sheet-modified-at'
 
 // データバージョン
 export const DATA_VERSION = 1
