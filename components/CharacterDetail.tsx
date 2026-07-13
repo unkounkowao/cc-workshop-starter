@@ -78,7 +78,7 @@ export default function CharacterDetail({ character }: Props) {
                   <React.Fragment key={field}>
                     {!isEmpty(value) && (
                       <div>
-                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <h3 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {CHARACTER_FIELD_LABELS[field]}
                         </h3>
                         <FieldText value={value as string} />
@@ -86,7 +86,7 @@ export default function CharacterDetail({ character }: Props) {
                     )}
                     {!isEmpty(character.imageSong) && (
                       <div>
-                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <h3 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {CHARACTER_FIELD_LABELS.imageSong}
                         </h3>
                         {character.imageSongUrl ? (
@@ -111,7 +111,7 @@ export default function CharacterDetail({ character }: Props) {
               if (isEmpty(value)) return null
               return (
                 <div key={field} className={isLong ? 'lg:col-span-2' : ''}>
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <h3 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {CHARACTER_FIELD_LABELS[field]}
                   </h3>
                   <FieldText value={value as string} />
