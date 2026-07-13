@@ -10,6 +10,7 @@ import type { Character, ImageColor } from '@/lib/types'
 type Props = {
   initialCharacter?: Character
   onSave: (character: Character) => void
+  onQuickSave?: (character: Character) => void
   onCancel: () => void
 }
 
@@ -78,7 +79,7 @@ const emptyForm: FormState = {
   other: '',
 }
 
-export default function CharacterForm({ initialCharacter, onSave, onCancel }: Props) {
+export default function CharacterForm({ initialCharacter, onSave, onQuickSave, onCancel }: Props) {
   const [form, setForm] = useState<FormState>(
     initialCharacter ? characterToForm(initialCharacter) : emptyForm
   )
@@ -97,26 +98,68 @@ export default function CharacterForm({ initialCharacter, onSave, onCancel }: Pr
     return () => window.removeEventListener('beforeunload', handler)
   }, [isDirty])
 
+  const quickSave = useCallback(() => {
+    const normalizedColors = form.imageColors.map((c) => ({
+      ...c,
+      hex: isValidHex(c.hex) ? normalizeHex(c.hex) : c.hex,
+    }))
+    const candidate: Partial<Character> = { ...form, imageColors: normalizedColors }
+    const errs = validateCharacter(candidate)
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs)
+      return
+    }
+    const ts = now()
+    const character: Character = {
+      id: initialCharacter?.id ?? generateId(),
+      name: form.name.trim(),
+      gender: form.gender.trim() || undefined,
+      age: form.age.trim() || undefined,
+      birthday: form.birthday.trim() || undefined,
+      height: form.height.trim() || undefined,
+      imageColors: normalizedColors,
+      imageMotif: form.imageMotif.trim() || undefined,
+      theme: form.theme.trim() || undefined,
+      summary: form.summary.trim() || undefined,
+      personality: form.personality.trim() || undefined,
+      likes: form.likes.trim() || undefined,
+      dislikes: form.dislikes.trim() || undefined,
+      past: form.past.trim() || undefined,
+      relationshipsAndFamily: form.relationshipsAndFamily.trim() || undefined,
+      idealsAndFears: form.idealsAndFears.trim() || undefined,
+      actionsInStory: form.actionsInStory.trim() || undefined,
+      changeAndEnding: form.changeAndEnding.trim() || undefined,
+      other: form.other.trim() || undefined,
+      sortOrder: initialCharacter?.sortOrder ?? getNextSortOrder(),
+      createdAt: initialCharacter?.createdAt ?? ts,
+      updatedAt: ts,
+    }
+    setIsDirty(false)
+    if (onQuickSave) {
+      onQuickSave(character)
+    } else {
+      onSave(character)
+    }
+  }, [form, initialCharacter, onSave, onQuickSave])
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault()
-        document.querySelector<HTMLButtonElement>('form button[type="submit"]')?.click()
+        quickSave()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
+  }, [quickSave])
 
   const update = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }))
     setIsDirty(true)
   }, [])
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault()
-
+  const save = useCallback(
+    () => {
       // カラーコードを正規化
       const normalizedColors = form.imageColors.map((c) => ({
         ...c,
@@ -165,6 +208,11 @@ export default function CharacterForm({ initialCharacter, onSave, onCancel }: Pr
     },
     [form, initialCharacter, onSave]
   )
+
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault()
+    save()
+  }, [save])
 
   const handleCancel = useCallback(() => {
     if (isDirty) {

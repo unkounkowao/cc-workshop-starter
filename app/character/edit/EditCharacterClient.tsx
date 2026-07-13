@@ -25,6 +25,11 @@ export default function EditCharacterClient() {
     router.push(`/character?id=${updated.id}`)
   }
 
+  const handleQuickSave = (updated: Character) => {
+    saveCharacter(updated)
+    setCharacter(updated)
+  }
+
   const handleCancel = () => {
     if (character) {
       router.push(`/character?id=${character.id}`)
@@ -56,6 +61,7 @@ export default function EditCharacterClient() {
         <CharacterForm
           initialCharacter={character}
           onSave={handleSave}
+          onQuickSave={handleQuickSave}
           onCancel={handleCancel}
         />
       </div>
