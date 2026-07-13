@@ -19,25 +19,35 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
   const [token, setToken] = useState('')
   const [gistId, setGistId] = useState('')
   const [loading, setLoading] = useState(false)
-  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const pendingData = useRef<CharacterSheetData | null>(null)
+  const dataRef = useRef(data)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Gistが新しければ自動読み込み
+  // dataRefを常に最新に保つ
+  useEffect(() => {
+    dataRef.current = data
+  }, [data])
+
+  const getCredentials = () => ({
+    savedToken: localStorage.getItem(TOKEN_KEY) ?? '',
+    savedGistId: localStorage.getItem(GIST_ID_KEY) ?? '',
+  })
+
+  const autoSave = () => {
+    const { savedToken, savedGistId } = getCredentials()
+    if (!savedToken || !savedGistId) return
+    saveToGist(savedToken, savedGistId, dataRef.current).catch(() => {})
+  }
+
   const autoLoad = () => {
-    const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
-    const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
+    const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
 
     const localData = loadData()
-    const localLatest = localData.characters.reduce((max, c) => {
-      return c.updatedAt > max ? c.updatedAt : max
-    }, '')
+    const localLatest = localData.characters.reduce((max, c) => c.updatedAt > max ? c.updatedAt : max, '')
 
     loadFromGist(savedToken, savedGistId)
       .then((gistData) => {
-        const gistLatest = gistData.characters.reduce((max, c) => {
-          return c.updatedAt > max ? c.updatedAt : max
-        }, '')
+        const gistLatest = gistData.characters.reduce((max, c) => c.updatedAt > max ? c.updatedAt : max, '')
         if (gistLatest <= localLatest) return
         saveData({ ...gistData, version: DATA_VERSION })
         onSynced()
@@ -45,22 +55,16 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
       .catch(() => {})
   }
 
-  // 起動時・タブがアクティブになったときに自動読み込み、非アクティブ時に即時保存
+  // 起動時・タブがアクティブ時に読み込み、非アクティブ時に即時保存
   useEffect(() => {
     autoLoad()
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {
         autoLoad()
       } else {
-        // タブを離れるとき、未保存データがあれば即時保存
-        const d = pendingData.current
-        if (!d) return
-        const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
-        const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
-        if (!savedToken || !savedGistId) return
-        if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-        pendingData.current = null
-        saveToGist(savedToken, savedGistId, d).catch(() => {})
+        if (timerRef.current) clearTimeout(timerRef.current)
+        timerRef.current = null
+        autoSave()
       }
     }
     document.addEventListener('visibilitychange', onVisibility)
@@ -68,26 +72,21 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // データ変更時に自動保存（5秒デバウンス、離脱時即時保存）
+  // データ変更時に3秒後に自動保存
   useEffect(() => {
-    const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
-    const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
+    const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
 
-    pendingData.current = data
-    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
-    autoSaveTimer.current = setTimeout(async () => {
-      try {
-        await saveToGist(savedToken, savedGistId, data)
-        pendingData.current = null
-      } catch {
-        // 自動保存失敗は無視
-      }
-    }, 5000)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null
+      autoSave()
+    }, 3000)
 
     return () => {
-      if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+      if (timerRef.current) clearTimeout(timerRef.current)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data])
 
   useEffect(() => {
@@ -176,7 +175,7 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-5 leading-relaxed">
                 GitHub Gist を使ってデバイス間でデータを共有します。
                 PAT と Gist ID は、各デバイスのブラウザにのみ保存されます。
-                設定済みの場合はページを開くと自動読み込み、データ変更後5秒で自動保存します。
+                設定済みの場合はページを開くと自動読み込み、データ変更後3秒で自動保存します。
               </p>
 
               {/* PAT入力 */}
