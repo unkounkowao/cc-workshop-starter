@@ -22,6 +22,7 @@ type FormState = {
   imageColors: ImageColor[]
   imageMotif: string
   theme: string
+  summary: string
   personality: string
   likes: string
   dislikes: string
@@ -43,6 +44,7 @@ function characterToForm(char: Character): FormState {
     imageColors: char.imageColors ?? [],
     imageMotif: char.imageMotif ?? '',
     theme: char.theme ?? '',
+    summary: char.summary ?? '',
     personality: char.personality ?? '',
     likes: char.likes ?? '',
     dislikes: char.dislikes ?? '',
@@ -64,6 +66,7 @@ const emptyForm: FormState = {
   imageColors: [],
   imageMotif: '',
   theme: '',
+  summary: '',
   personality: '',
   likes: '',
   dislikes: '',
@@ -142,6 +145,7 @@ export default function CharacterForm({ initialCharacter, onSave, onCancel }: Pr
         imageColors: normalizedColors,
         imageMotif: form.imageMotif.trim() || undefined,
         theme: form.theme.trim() || undefined,
+        summary: form.summary.trim() || undefined,
         personality: form.personality.trim() || undefined,
         likes: form.likes.trim() || undefined,
         dislikes: form.dislikes.trim() || undefined,
