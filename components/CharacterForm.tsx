@@ -226,7 +226,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
   return (
     <form onSubmit={handleSubmit} noValidate>
       {/* 操作ボタン（上部） */}
-      <div className="flex items-center justify-between gap-3 mb-8 pb-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-3 mb-8 pb-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
           {initialCharacter ? 'キャラクターを編集' : '新規キャラクター'}
         </h1>
