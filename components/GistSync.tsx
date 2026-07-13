@@ -19,7 +19,6 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
   const [token, setToken] = useState('')
   const [gistId, setGistId] = useState('')
   const [loading, setLoading] = useState(false)
-  const isFirstRender = useRef(true)
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 起動時に自動読み込み（Gistの方が新しい場合のみ）
@@ -50,10 +49,6 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
 
   // データ変更時に自動保存（5秒デバウンス）
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
-    }
     const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
     const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
     if (!savedToken || !savedGistId) return
@@ -70,7 +65,7 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
     return () => {
       if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
     }
-  }, [data, onToast])
+  }, [data])
 
   useEffect(() => {
     setToken(localStorage.getItem(TOKEN_KEY) ?? '')
