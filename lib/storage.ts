@@ -70,9 +70,13 @@ export function deleteCharacter(id: string): void {
 // 並び順を更新
 export function updateSortOrders(orderedIds: string[]): void {
   const data = loadData()
+  const now = new Date().toISOString()
   orderedIds.forEach((id, index) => {
     const char = data.characters.find((c) => c.id === id)
-    if (char) char.sortOrder = index
+    if (char) {
+      char.sortOrder = index
+      char.updatedAt = now
+    }
   })
   saveData(data)
 }
