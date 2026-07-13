@@ -55,61 +55,59 @@ export default function CharacterDetail({ character }: Props) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {LONG_TEXT_FIELDS.map((field) => {
               const value = character[field]
-              if (isEmpty(value)) return null
               const isLong = ['past', 'relationshipsAndFamily', 'actionsInStory', 'changeAndEnding', 'other'].includes(field)
+
+              // imageMotif はイメソンとセットで扱う
+              if (field === 'imageMotif') {
+                if (isEmpty(value) && isEmpty(character.imageSong)) return null
+                return (
+                  <React.Fragment key={field}>
+                    {!isEmpty(value) && (
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {CHARACTER_FIELD_LABELS[field]}
+                        </h3>
+                        <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
+                          {value}
+                        </p>
+                      </div>
+                    )}
+                    {!isEmpty(character.imageSong) && (
+                      <div>
+                        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {CHARACTER_FIELD_LABELS.imageSong}
+                        </h3>
+                        {character.imageSongUrl ? (
+                          <a
+                            href={character.imageSongUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                          >
+                            {character.imageSong}
+                            <span className="text-xs">↗</span>
+                          </a>
+                        ) : (
+                          <p className="text-sm text-gray-900 dark:text-gray-100">{character.imageSong}</p>
+                        )}
+                      </div>
+                    )}
+                  </React.Fragment>
+                )
+              }
+
+              if (isEmpty(value)) return null
               return (
-                <React.Fragment key={field}>
-                  <div className={isLong ? 'lg:col-span-2' : ''}>
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {CHARACTER_FIELD_LABELS[field]}
-                    </h3>
-                    <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
-                      {value}
-                    </p>
-                  </div>
-                  {field === 'imageMotif' && !isEmpty(character.imageSong) && (
-                    <div>
-                      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {CHARACTER_FIELD_LABELS.imageSong}
-                      </h3>
-                      {character.imageSongUrl ? (
-                        <a
-                          href={character.imageSongUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-                        >
-                          {character.imageSong}
-                          <span className="text-xs">↗</span>
-                        </a>
-                      ) : (
-                        <p className="text-sm text-gray-900 dark:text-gray-100">{character.imageSong}</p>
-                      )}
-                    </div>
-                  )}
-                </React.Fragment>
+                <div key={field} className={isLong ? 'lg:col-span-2' : ''}>
+                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {CHARACTER_FIELD_LABELS[field]}
+                  </h3>
+                  <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
+                    {value}
+                  </p>
+                </div>
               )
             })}
-            {isEmpty(character.imageMotif) && !isEmpty(character.imageSong) && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {CHARACTER_FIELD_LABELS.imageSong}
-                </h3>
-                {character.imageSongUrl ? (
-                  <a
-                    href={character.imageSongUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
-                  >
-                    {character.imageSong}
-                    <span className="text-xs">↗</span>
-                  </a>
-                ) : (
-                  <p className="text-sm text-gray-900 dark:text-gray-100">{character.imageSong}</p>
-                )}
-              </div>
-            )}
           </div>
         </section>
       )}
