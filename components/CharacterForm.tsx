@@ -129,6 +129,8 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
       height: form.height.trim() || undefined,
       imageColors: normalizedColors,
       imageMotif: form.imageMotif.trim() || undefined,
+      imageSong: form.imageSong.trim() || undefined,
+      imageSongUrl: form.imageSongUrl.trim() || undefined,
       theme: form.theme.trim() || undefined,
       summary: form.summary.trim() || undefined,
       personality: form.personality.trim() || undefined,
@@ -170,23 +172,16 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
 
   const save = useCallback(
     () => {
-      // カラーコードを正規化
+      // キャラクターを組み立てて onSave（ナビゲートあり）を呼ぶ
       const normalizedColors = form.imageColors.map((c) => ({
         ...c,
         hex: isValidHex(c.hex) ? normalizeHex(c.hex) : c.hex,
       }))
-
-      const candidate: Partial<Character> = {
-        ...form,
-        imageColors: normalizedColors,
-      }
-
-      const errs = validateCharacter(candidate)
+      const errs = validateCharacter({ ...form, imageColors: normalizedColors })
       if (Object.keys(errs).length > 0) {
         setErrors(errs)
         return
       }
-
       const ts = now()
       const character: Character = {
         id: initialCharacter?.id ?? generateId(),
@@ -215,7 +210,6 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
         createdAt: initialCharacter?.createdAt ?? ts,
         updatedAt: ts,
       }
-
       setIsDirty(false)
       onSave(character)
     },
