@@ -153,13 +153,21 @@ export default function ColorEditor({ colors, onChange }: Props) {
             >
               {/* 上段: スウォッチ + HEX入力 + 削除ボタン */}
               <div className="flex items-center gap-2">
-                {/* 色スウォッチ */}
+                {/* 色スウォッチ（PC: ネイティブピッカー重ね / スマホ: 表示のみ） */}
                 <div
-                  className="w-12 h-12 rounded-md border border-gray-300 dark:border-gray-600 shrink-0"
+                  className="w-12 h-12 rounded-md border border-gray-300 dark:border-gray-600 shrink-0 relative overflow-hidden"
                   style={{ backgroundColor: swatchBg }}
-                  role="img"
-                  aria-label={`選択中の色: ${color.hex}`}
-                />
+                >
+                  {/* PCのみネイティブピッカーを重ねる */}
+                  <input
+                    type="color"
+                    value={validHex}
+                    onChange={(e) => commitHex(color.id, e.target.value)}
+                    className="hidden sm:block absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    aria-label="カラーピッカー"
+                    title="クリックして色を選択"
+                  />
+                </div>
 
                 {/* HEX入力 */}
                 <div className="flex flex-col gap-1 flex-1 min-w-0">
@@ -192,8 +200,8 @@ export default function ColorEditor({ colors, onChange }: Props) {
                 </button>
               </div>
 
-              {/* HSLスライダー */}
-              <div className="flex flex-col gap-2">
+              {/* HSLスライダー（スマホのみ表示） */}
+              <div className="flex flex-col gap-2 sm:hidden">
                 {/* 色相 */}
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-gray-600 dark:text-gray-400 w-8 shrink-0">
