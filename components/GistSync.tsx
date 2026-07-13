@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { saveToGist, loadFromGist } from '@/lib/gist'
 import { loadData, saveData } from '@/lib/storage'
-import { DATA_VERSION, LAST_MODIFIED_KEY } from '@/lib/constants'
+import { DATA_VERSION } from '@/lib/constants'
 import type { CharacterSheetData } from '@/lib/types'
 
 const TOKEN_KEY = 'novel-cs-gist-token'
@@ -42,14 +42,33 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
 
-    // ローカルの最終更新時刻（キャラ更新・削除を含む）
-    const localModified = localStorage.getItem(LAST_MODIFIED_KEY) ?? ''
-
     loadFromGist(savedToken, savedGistId)
       .then((gistData) => {
-        const gistLatest = gistData.characters.reduce((max, c) => c.updatedAt > max ? c.updatedAt : max, '')
-        if (gistLatest <= localModified) return
-        saveData({ ...gistData, version: DATA_VERSION }, false)
+        const localData = loadData()
+
+        // キャラクターをIDでマップ化
+        const localMap = new Map(localData.characters.map(c => [c.id, c]))
+        const gistMap = new Map(gistData.characters.map(c => [c.id, c]))
+
+        // マージ: 両方にあれば新しい方を採用、片方だけにあれば採用
+        const allIds = new Set([...localMap.keys(), ...gistMap.keys()])
+        const merged = Array.from(allIds).map(id => {
+          const local = localMap.get(id)
+          const gist = gistMap.get(id)
+          if (local && gist) return local.updatedAt >= gist.updatedAt ? local : gist
+          if (local) return local
+          return gist!
+        })
+
+        // 変化がなければスキップ
+        const hasChange = merged.some(c => {
+          const local = localMap.get(c.id)
+          return !local || local.updatedAt !== c.updatedAt
+        }) || merged.length !== localData.characters.length
+
+        if (!hasChange) return
+
+        saveData({ version: DATA_VERSION, characters: merged }, false)
         onSynced()
       })
       .catch(() => {})
