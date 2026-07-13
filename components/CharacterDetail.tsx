@@ -12,7 +12,7 @@ type Props = {
 function FieldText({ value }: { value: string }) {
   const paragraphs = value.split(/\n\n+/)
   return (
-    <div className="space-y-1">
+    <div className="space-y-3">
       {paragraphs.map((para, i) => (
         <p key={i} className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
           {para}
@@ -66,7 +66,7 @@ export default function CharacterDetail({ character }: Props) {
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
             キャラクター設定
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {LONG_TEXT_FIELDS.map((field) => {
               const value = character[field]
               const isLong = ['past', 'relationshipsAndFamily', 'actionsInStory', 'changeAndEnding', 'other'].includes(field)
