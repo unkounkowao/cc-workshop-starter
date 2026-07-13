@@ -49,13 +49,13 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
       .then((gistData) => {
         const gistLatest = gistData.characters.reduce((max, c) => c.updatedAt > max ? c.updatedAt : max, '')
         if (gistLatest <= localModified) return
-        saveData({ ...gistData, version: DATA_VERSION })
+        saveData({ ...gistData, version: DATA_VERSION }, false)
         onSynced()
       })
       .catch(() => {})
   }
 
-  // 起動時・タブがアクティブ時に読み込み、非アクティブ時に即時保存
+  // 起動時・タブがアクティブ時・30秒ごとに読み込み、非アクティブ時に即時保存
   useEffect(() => {
     autoLoad()
     const onVisibility = () => {
@@ -68,7 +68,11 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
       }
     }
     document.addEventListener('visibilitychange', onVisibility)
-    return () => document.removeEventListener('visibilitychange', onVisibility)
+    const pollInterval = setInterval(autoLoad, 30000)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      clearInterval(pollInterval)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -134,7 +138,7 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
     try {
       saveSettings()
       const loaded: CharacterSheetData = await loadFromGist(token.trim(), gistId.trim())
-      saveData({ ...loaded, version: DATA_VERSION })
+      saveData({ ...loaded, version: DATA_VERSION }, false)
       onSynced()
       onToast(`${loaded.characters.length}件のデータをGistから読み込みました`, 'success')
       setOpen(false)

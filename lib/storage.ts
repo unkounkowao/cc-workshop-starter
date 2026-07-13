@@ -16,10 +16,13 @@ export function loadData(): CharacterSheetData {
 }
 
 // LocalStorageへデータを保存する
-export function saveData(data: CharacterSheetData): void {
+// updateModifiedAt: ユーザー操作による変更の場合true（Gistからの読み込み時はfalse）
+export function saveData(data: CharacterSheetData, updateModifiedAt = true): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-    localStorage.setItem(LAST_MODIFIED_KEY, new Date().toISOString())
+    if (updateModifiedAt) {
+      localStorage.setItem(LAST_MODIFIED_KEY, new Date().toISOString())
+    }
   } catch (e) {
     console.error('データの保存に失敗しました:', e)
     throw new Error('データの保存に失敗しました。ブラウザのストレージ容量を確認してください。')
