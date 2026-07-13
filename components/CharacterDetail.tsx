@@ -8,6 +8,20 @@ type Props = {
   character: Character
 }
 
+// 空白行を狭い段落間隔で表現する
+function FieldText({ value }: { value: string }) {
+  const paragraphs = value.split(/\n\n+/)
+  return (
+    <div className="space-y-1">
+      {paragraphs.map((para, i) => (
+        <p key={i} className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
+          {para}
+        </p>
+      ))}
+    </div>
+  )
+}
+
 export default function CharacterDetail({ character }: Props) {
   return (
     <div>
@@ -67,9 +81,7 @@ export default function CharacterDetail({ character }: Props) {
                         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {CHARACTER_FIELD_LABELS[field]}
                         </h3>
-                        <p className="text-sm text-gray-900 dark:text-gray-100 leading-snug whitespace-pre-wrap">
-                          {value}
-                        </p>
+                        <FieldText value={value as string} />
                       </div>
                     )}
                     {!isEmpty(character.imageSong) && (
@@ -102,9 +114,7 @@ export default function CharacterDetail({ character }: Props) {
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {CHARACTER_FIELD_LABELS[field]}
                   </h3>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 leading-snug whitespace-pre-wrap">
-                    {value}
-                  </p>
+                  <FieldText value={value as string} />
                 </div>
               )
             })}
