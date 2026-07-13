@@ -9,7 +9,6 @@ type Props = {
   total: number
   onMoveUp: (id: string) => void
   onMoveDown: (id: string) => void
-  isSearching: boolean
 }
 
 export default function CharacterCard({
@@ -18,7 +17,6 @@ export default function CharacterCard({
   total,
   onMoveUp,
   onMoveDown,
-  isSearching,
 }: Props) {
   return (
     <div className="group relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
@@ -49,28 +47,26 @@ export default function CharacterCard({
         </div>
       </Link>
 
-      {/* 並び替えボタン（検索中は非表示） */}
-      {!isSearching && (
-        <div className="flex border-t border-gray-100 dark:border-gray-800">
-          <button
-            onClick={() => onMoveUp(character.id)}
-            disabled={index === 0}
-            className="flex-1 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
-            aria-label={`${character.name} を上に移動`}
-          >
-            ↑ 上へ
-          </button>
-          <div className="w-px bg-gray-100 dark:bg-gray-800" />
-          <button
-            onClick={() => onMoveDown(character.id)}
-            disabled={index === total - 1}
-            className="flex-1 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
-            aria-label={`${character.name} を下に移動`}
-          >
-            ↓ 下へ
-          </button>
-        </div>
-      )}
+      {/* 並び替えボタン */}
+      <div className="flex border-t border-gray-100 dark:border-gray-800">
+        <button
+          onClick={() => onMoveUp(character.id)}
+          disabled={index === 0}
+          className="flex-1 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+          aria-label={`${character.name} を上に移動`}
+        >
+          ↑ 上へ
+        </button>
+        <div className="w-px bg-gray-100 dark:bg-gray-800" />
+        <button
+          onClick={() => onMoveDown(character.id)}
+          disabled={index === total - 1}
+          className="flex-1 py-2 text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500"
+          aria-label={`${character.name} を下に移動`}
+        >
+          ↓ 下へ
+        </button>
+      </div>
     </div>
   )
 }
