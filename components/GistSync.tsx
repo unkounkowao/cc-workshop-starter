@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { saveToGist, loadFromGist } from '@/lib/gist'
 import { loadData, saveData } from '@/lib/storage'
-import { DATA_VERSION } from '@/lib/constants'
+import { DATA_VERSION, LAST_MODIFIED_KEY } from '@/lib/constants'
 import type { CharacterSheetData } from '@/lib/types'
 
 const TOKEN_KEY = 'novel-cs-gist-token'
@@ -42,13 +42,13 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
 
-    const localData = loadData()
-    const localLatest = localData.characters.reduce((max, c) => c.updatedAt > max ? c.updatedAt : max, '')
+    // ローカルの最終更新時刻（キャラ更新・削除を含む）
+    const localModified = localStorage.getItem(LAST_MODIFIED_KEY) ?? ''
 
     loadFromGist(savedToken, savedGistId)
       .then((gistData) => {
         const gistLatest = gistData.characters.reduce((max, c) => c.updatedAt > max ? c.updatedAt : max, '')
-        if (gistLatest <= localLatest) return
+        if (gistLatest <= localModified) return
         saveData({ ...gistData, version: DATA_VERSION })
         onSynced()
       })

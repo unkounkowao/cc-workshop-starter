@@ -1,4 +1,4 @@
-import { STORAGE_KEY, DEFAULT_DATA } from './constants'
+import { STORAGE_KEY, LAST_MODIFIED_KEY, DEFAULT_DATA } from './constants'
 import type { Character, CharacterSheetData } from './types'
 
 // LocalStorageからデータを読み込む（失敗時は初期値を返す）
@@ -19,6 +19,7 @@ export function loadData(): CharacterSheetData {
 export function saveData(data: CharacterSheetData): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    localStorage.setItem(LAST_MODIFIED_KEY, new Date().toISOString())
   } catch (e) {
     console.error('データの保存に失敗しました:', e)
     throw new Error('データの保存に失敗しました。ブラウザのストレージ容量を確認してください。')
