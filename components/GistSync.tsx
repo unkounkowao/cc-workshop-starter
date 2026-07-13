@@ -22,17 +22,25 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
   const isFirstRender = useRef(true)
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 起動時に自動読み込み
+  // 起動時に自動読み込み（Gistの方が新しい場合のみ）
   useEffect(() => {
     const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
     const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
     if (!savedToken || !savedGistId) return
 
+    const localData = loadData()
+    const localLatest = localData.characters.reduce((max, c) => {
+      return c.updatedAt > max ? c.updatedAt : max
+    }, '')
+
     loadFromGist(savedToken, savedGistId)
-      .then((loaded) => {
-        saveData({ ...loaded, version: DATA_VERSION })
+      .then((gistData) => {
+        const gistLatest = gistData.characters.reduce((max, c) => {
+          return c.updatedAt > max ? c.updatedAt : max
+        }, '')
+        if (gistLatest <= localLatest) return
+        saveData({ ...gistData, version: DATA_VERSION })
         onSynced()
-        onToast('Gistからデータを自動読み込みしました', 'success')
       })
       .catch(() => {
         // 自動読み込み失敗は無視
@@ -54,7 +62,6 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
     autoSaveTimer.current = setTimeout(async () => {
       try {
         await saveToGist(savedToken, savedGistId, data)
-        onToast('Gistに自動保存しました', 'success')
       } catch {
         // 自動保存失敗は無視
       }
