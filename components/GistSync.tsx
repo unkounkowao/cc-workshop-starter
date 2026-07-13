@@ -21,8 +21,8 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
   const [loading, setLoading] = useState(false)
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 起動時に自動読み込み（Gistの方が新しい場合のみ）
-  useEffect(() => {
+  // Gistが新しければ自動読み込み
+  const autoLoad = () => {
     const savedToken = localStorage.getItem(TOKEN_KEY) ?? ''
     const savedGistId = localStorage.getItem(GIST_ID_KEY) ?? ''
     if (!savedToken || !savedGistId) return
@@ -41,9 +41,15 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
         saveData({ ...gistData, version: DATA_VERSION })
         onSynced()
       })
-      .catch(() => {
-        // 自動読み込み失敗は無視
-      })
+      .catch(() => {})
+  }
+
+  // 起動時・タブがアクティブになったときに自動読み込み
+  useEffect(() => {
+    autoLoad()
+    const onVisibility = () => { if (document.visibilityState === 'visible') autoLoad() }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
