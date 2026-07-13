@@ -24,6 +24,7 @@ export const CHARACTER_FIELD_LABELS: Record<string, string> = {
   height: '身長',
   imageMotif: 'イメージモチーフ',
   theme: 'テーマ',
+  summary: '概要',
   personality: '性格',
   likes: '好きなもの',
   dislikes: '嫌いなもの',
@@ -42,6 +43,7 @@ export const SHORT_TEXT_FIELDS = ['name', 'gender', 'age', 'birthday', 'height']
 export const LONG_TEXT_FIELDS = [
   'imageMotif',
   'theme',
+  'summary',
   'personality',
   'likes',
   'dislikes',

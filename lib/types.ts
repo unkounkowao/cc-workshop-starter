@@ -16,6 +16,7 @@ export type Character = {
   imageColors: ImageColor[]
   imageMotif?: string
   theme?: string
+  summary?: string
   personality?: string
   likes?: string
   dislikes?: string
