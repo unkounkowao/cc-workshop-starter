@@ -1,54 +1,119 @@
-# ワークショップ スターター
+# キャラクターシート管理アプリ
 
-Claude Code オーケストレーション講座の参加者用スターターリポジトリです。
+小説執筆用のキャラクター設定管理Webアプリです。複数の登場人物のプロフィール、性格、過去、人間関係などをブラウザ上で整理・編集・閲覧できます。
 
-## 使い方
+## 特徴
 
-1. このリポジトリをFork
-2. ローカルにClone
-3. `npm install` を実行
-4. Claude Code を開く（**必ずこのフォルダの中で**）
-5. あなたのサービスアイデアを伝える
-6. AIチームが自動でWebサイトを構築します
+- キャラクターの作成・閲覧・編集・削除
+- イメージカラーの複数登録とカラーチップ表示
+- キャラクターの並び替え（上へ/下へボタン）
+- キャラクター名による検索
+- JSONファイルへのエクスポート・インポート
+- スマートフォン/PC両対応のレスポンシブUI
+- ブラウザのLocalStorageへのデータ保存（サーバー不要）
+- GitHub Pages等の静的ホスティングで動作
 
-## エージェントチーム
+## セットアップ
 
-このプロジェクトには3つのAIエージェントが事前設定されています：
+```bash
+# リポジトリをクローン
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
 
-- **Sherpa（計画役）**: アイデアをタスクに分解
-- **Artisan（実装役）**: Next.js + Tailwind CSSで実装
-- **Radar（検証役）**: ビルド確認・品質チェック
+# 依存パッケージをインストール
+npm install
 
-## 安全設定
+# 開発サーバーを起動
+npm run dev
+```
 
-このリポジトリには安全設定（`.claude/settings.json`）が含まれています。Fork すると自動で適用されます。
+ブラウザで `http://localhost:3000` を開いてください。
 
-### サンドボックス
+## コマンド
 
-Claude Code の動作環境を OS レベルで隔離します。ファイルシステムやネットワークへのアクセスが制限され、万が一の暴走でもパソコン全体に被害が及びません。
+```bash
+npm run dev        # 開発サーバー起動
+npm run build      # 本番ビルド
+npm run start      # 本番サーバー起動
+npm run test       # テスト実行
+npm run typecheck  # TypeScript型チェック
+npm run lint       # ESLint実行
+npm run lint:fix   # ESLint自動修正
+```
 
-### 3 層パーミッション設定（DCP 準拠）
+## GitHub Pagesへのデプロイ
 
-| 区分 | DCP Tier | 対象操作 |
-|------|----------|---------|
-| allow（自動許可） | Tier 4 | ファイル読み取り、git status/diff/log、テスト・ビルド実行 |
-| ask（確認して実行） | Tier 3 | ファイル変更、削除コマンド（rm/rmdir/unlink 等）、git add/commit、パッケージインストール |
-| deny（絶対禁止） | Tier 1 | sudo/su、秘密情報アクセス（.env/.ssh）、git push、シェル設定変更（.zshrc/.bashrc）、外部通信（curl/wget） |
+### 事前準備
 
-### ホームディレクトリで起動しない
+`next.config.ts` の `basePath` をリポジトリ名に合わせて変更してください：
 
-Claude Code はホームディレクトリ（ `~` ）で起動しないでください。書類・SSH鍵・クラウドの認証情報などすべてのファイルにアクセスできる状態になります。必ずこのプロジェクトフォルダの中で起動してください。
+```ts
+const nextConfig: NextConfig = {
+  output: 'export',
+  basePath: '/your-repo-name', // リポジトリ名に変更
+  images: { unoptimized: true },
+}
+```
 
-### 設定の確認方法
+### 自動デプロイ（GitHub Actions）
 
-Claude Code 内で以下のコマンドを実行すると、有効な設定を確認できます。
+リポジトリの **Settings → Pages → Source** を `GitHub Actions` に設定すると、`main` ブランチへのプッシュ時に自動デプロイされます。
+
+ワークフローファイル: `.github/workflows/deploy.yml`
+
+公開URLは `https://your-username.github.io/your-repo-name/` になります。
+
+### 手動デプロイ
+
+```bash
+npm run build
+# out/ ディレクトリを gh-pages ブランチにプッシュ
+```
+
+## データの保存とプライバシーについて
+
+**重要**: キャラクターデータはブラウザの **LocalStorage** にのみ保存されます。
+
+- GitHubリポジトリにはキャラクターデータが含まれません
+- 外部サーバーへのデータ送信は一切行いません
+- 同じ端末・同じブラウザ・同じサイトを操作できる人はLocalStorageのデータを閲覧できる可能性があります
+- ブラウザのデータをクリアするとキャラクターデータも削除されます。**定期的なエクスポートでバックアップしてください**
+
+### GitHubリポジトリの公開範囲について
+
+GitHub Pagesを利用する場合、アプリのソースコード（HTML/CSS/JS）は公開されますが、LocalStorageに保存されたキャラクターデータは公開されません。
+
+リポジトリを非公開にしたい場合は、GitHubの有料プランが必要です。詳細はGitHubの公式ドキュメントをご確認ください。
+
+## ディレクトリ構成
 
 ```
-/permissions
+├── app/                    # Next.js App Router ページ
+│   ├── layout.tsx
+│   ├── page.tsx            # キャラクター一覧
+│   └── characters/
+│       ├── new/page.tsx    # キャラクター追加
+│       └── [id]/
+│           ├── page.tsx    # キャラクター詳細
+│           └── edit/page.tsx # キャラクター編集
+├── components/             # Reactコンポーネント
+├── lib/                    # ユーティリティ・型定義
+│   ├── types.ts
+│   ├── constants.ts
+│   ├── validation.ts
+│   ├── storage.ts
+│   └── utils.ts
+├── __tests__/              # テストコード
+│   ├── unit/
+│   └── components/
+└── .github/workflows/      # GitHub Actions
 ```
 
 ## 技術スタック
 
-- Next.js (Static Export)
-- Tailwind CSS
-- TypeScript
+- [Next.js](https://nextjs.org/) 15 (App Router, Static Export)
+- [React](https://react.dev/) 19
+- [TypeScript](https://www.typescriptlang.org/) 5
+- [Tailwind CSS](https://tailwindcss.com/) 4
+- [Vitest](https://vitest.dev/) + [React Testing Library](https://testing-library.com/)
+- LocalStorage（データ永続化）

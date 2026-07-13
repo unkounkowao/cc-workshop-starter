@@ -1,5 +1,5 @@
 {
-  "$schema": "https://code.claude.com/settings.schema.json",
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "_comment": "ワークショップ安全設定（DCP準拠）。参加者の安全を守るための設定。",
   "_tiers": "deny=Tier1(絶対禁止・ブロック), ask=Tier3(確認必須・アラート), allow=Tier4(通常操作・自動許可)",
 
@@ -8,6 +8,8 @@
       "Read",
       "Glob",
       "Grep",
+      "Write",
+      "Edit",
       "Bash(git status)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
@@ -17,8 +19,6 @@
       "Bash(npm run build:*)"
     ],
     "ask": [
-      "Write",
-      "Edit",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(npm install:*)",
@@ -36,7 +36,6 @@
       "Bash(sudo:*)",
       "Bash(su:*)",
       "Bash(shred:*)",
-      "Bash(curl:*)",
       "Bash(wget:*)",
       "Bash(git push)",
       "Bash(git push:*)",
