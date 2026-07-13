@@ -94,6 +94,17 @@ export default function CharacterForm({ initialCharacter, onSave, onCancel }: Pr
     return () => window.removeEventListener('beforeunload', handler)
   }, [isDirty])
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault()
+        document.querySelector<HTMLButtonElement>('form button[type="submit"]')?.click()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
   const update = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }))
     setIsDirty(true)
