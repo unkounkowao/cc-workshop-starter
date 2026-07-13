@@ -9,6 +9,7 @@ export type ImageColor = {
 export type Character = {
   id: string
   name: string
+  nameReading?: string
   gender?: string
   age?: string
   birthday?: string

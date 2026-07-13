@@ -16,6 +16,7 @@ type Props = {
 
 type FormState = {
   name: string
+  nameReading: string
   gender: string
   age: string
   birthday: string
@@ -38,6 +39,7 @@ type FormState = {
 function characterToForm(char: Character): FormState {
   return {
     name: char.name ?? '',
+    nameReading: char.nameReading ?? '',
     gender: char.gender ?? '',
     age: char.age ?? '',
     birthday: char.birthday ?? '',
@@ -60,6 +62,7 @@ function characterToForm(char: Character): FormState {
 
 const emptyForm: FormState = {
   name: '',
+  nameReading: '',
   gender: '',
   age: '',
   birthday: '',
@@ -113,6 +116,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
     const character: Character = {
       id: initialCharacter?.id ?? generateId(),
       name: form.name.trim(),
+      nameReading: form.nameReading.trim() || undefined,
       gender: form.gender.trim() || undefined,
       age: form.age.trim() || undefined,
       birthday: form.birthday.trim() || undefined,
@@ -181,6 +185,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
       const character: Character = {
         id: initialCharacter?.id ?? generateId(),
         name: form.name.trim(),
+        nameReading: form.nameReading.trim() || undefined,
         gender: form.gender.trim() || undefined,
         age: form.age.trim() || undefined,
         birthday: form.birthday.trim() || undefined,

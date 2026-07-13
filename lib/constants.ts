@@ -18,6 +18,7 @@ export const DEFAULT_DATA = {
 // キャラクター項目の定義（ラベルと説明のマッピング）
 export const CHARACTER_FIELD_LABELS: Record<string, string> = {
   name: '名前',
+  nameReading: '読み方',
   gender: '性別',
   age: '年齢',
   birthday: '誕生日',
@@ -37,7 +38,7 @@ export const CHARACTER_FIELD_LABELS: Record<string, string> = {
 }
 
 // 短いテキスト項目（1行入力）
-export const SHORT_TEXT_FIELDS = ['name', 'gender', 'age', 'birthday', 'height'] as const
+export const SHORT_TEXT_FIELDS = ['name', 'nameReading', 'gender', 'age', 'birthday', 'height'] as const
 
 // 長いテキスト項目（複数行入力）
 export const LONG_TEXT_FIELDS = [
