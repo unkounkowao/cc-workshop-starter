@@ -52,7 +52,7 @@ export default function CharacterDetail({ character }: Props) {
           <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
             キャラクター設定
           </h2>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             {LONG_TEXT_FIELDS.map((field) => {
               const value = character[field]
               const isLong = ['past', 'relationshipsAndFamily', 'actionsInStory', 'changeAndEnding', 'other'].includes(field)
@@ -67,7 +67,7 @@ export default function CharacterDetail({ character }: Props) {
                         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {CHARACTER_FIELD_LABELS[field]}
                         </h3>
-                        <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
+                        <p className="text-sm text-gray-900 dark:text-gray-100 leading-snug whitespace-pre-wrap">
                           {value}
                         </p>
                       </div>
@@ -102,7 +102,7 @@ export default function CharacterDetail({ character }: Props) {
                   <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {CHARACTER_FIELD_LABELS[field]}
                   </h3>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-sm text-gray-900 dark:text-gray-100 leading-snug whitespace-pre-wrap">
                     {value}
                   </p>
                 </div>
