@@ -1,4 +1,4 @@
-import { STORAGE_KEY, LAST_MODIFIED_KEY, DEFAULT_DATA } from './constants'
+import { STORAGE_KEY, LAST_MODIFIED_KEY, DELETED_IDS_KEY, DEFAULT_DATA } from './constants'
 import type { Character, CharacterSheetData } from './types'
 
 // LocalStorageからデータを読み込む（失敗時は初期値を返す）
@@ -58,6 +58,13 @@ export function deleteCharacter(id: string): void {
   const data = loadData()
   data.characters = data.characters.filter((c) => c.id !== id)
   saveData(data)
+  // 削除IDを記録（マージ時にGistから復元されないよう）
+  try {
+    const raw = localStorage.getItem(DELETED_IDS_KEY)
+    const deleted: { id: string; deletedAt: string }[] = raw ? JSON.parse(raw) : []
+    deleted.push({ id, deletedAt: new Date().toISOString() })
+    localStorage.setItem(DELETED_IDS_KEY, JSON.stringify(deleted))
+  } catch { /* ignore */ }
 }
 
 // 並び順を更新

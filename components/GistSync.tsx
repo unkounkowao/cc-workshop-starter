@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { saveToGist, loadFromGist } from '@/lib/gist'
 import { loadData, saveData } from '@/lib/storage'
-import { DATA_VERSION } from '@/lib/constants'
+import { DATA_VERSION, DELETED_IDS_KEY } from '@/lib/constants'
 import type { CharacterSheetData } from '@/lib/types'
 
 const TOKEN_KEY = 'novel-cs-gist-token'
@@ -46,18 +46,27 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
       .then((gistData) => {
         const localData = loadData()
 
+        // 削除済みIDを取得
+        const deletedRaw = localStorage.getItem(DELETED_IDS_KEY)
+        const deletedList: { id: string; deletedAt: string }[] = deletedRaw ? JSON.parse(deletedRaw) : []
+        const deletedMap = new Map(deletedList.map(d => [d.id, d.deletedAt]))
+
         // キャラクターをIDでマップ化
         const localMap = new Map(localData.characters.map(c => [c.id, c]))
         const gistMap = new Map(gistData.characters.map(c => [c.id, c]))
 
         // マージ: 両方にあれば新しい方を採用、片方だけにあれば採用
+        // ただし削除済みIDはGistにあっても復元しない
         const allIds = new Set([...localMap.keys(), ...gistMap.keys()])
-        const merged = Array.from(allIds).map(id => {
+        const merged = Array.from(allIds).flatMap(id => {
+          const deletedAt = deletedMap.get(id)
           const local = localMap.get(id)
           const gist = gistMap.get(id)
-          if (local && gist) return local.updatedAt >= gist.updatedAt ? local : gist
-          if (local) return local
-          return gist!
+          // 削除済み かつ 削除日時がGistの更新日時より新しければスキップ
+          if (deletedAt && gist && deletedAt >= gist.updatedAt) return []
+          if (local && gist) return [local.updatedAt >= gist.updatedAt ? local : gist]
+          if (local) return [local]
+          return [gist!]
         })
 
         // 変化がなければスキップ
