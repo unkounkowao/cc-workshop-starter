@@ -55,9 +55,14 @@ export default function CharacterDetailClient() {
           >
             ← 一覧へ
           </Link>
-          <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex-1 text-center sm:text-left">
-            {character.name}
-          </h1>
+          <div className="flex-1 text-center sm:text-left">
+            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+              {character.name}
+            </h1>
+            {character.nameReading && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">{character.nameReading}</p>
+            )}
+          </div>
           <div className="flex gap-2">
             <Link
               href={`/character/edit?id=${character.id}`}

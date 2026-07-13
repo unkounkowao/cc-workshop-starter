@@ -17,7 +17,7 @@ export default function CharacterDetail({ character }: Props) {
           基本情報
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {(['nameReading', 'gender', 'age', 'birthday', 'height'] as const).map((field) => {
+          {(['gender', 'age', 'birthday', 'height'] as const).map((field) => {
             const value = character[field]
             if (isEmpty(value)) return null
             return (
