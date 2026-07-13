@@ -19,11 +19,11 @@ export default function CharacterCard({
   onMoveDown,
 }: Props) {
   return (
-    <div className="group relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+    <div className="group relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
       {/* メインリンク */}
       <Link
         href={`/character?id=${character.id}`}
-        className="block p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-xl"
+        className="block p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded-xl flex-1"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
