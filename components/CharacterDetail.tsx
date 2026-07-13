@@ -58,17 +58,39 @@ export default function CharacterDetail({ character }: Props) {
               if (isEmpty(value)) return null
               const isLong = ['past', 'relationshipsAndFamily', 'actionsInStory', 'changeAndEnding', 'other'].includes(field)
               return (
-                <div key={field} className={isLong ? 'lg:col-span-2' : ''}>
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {CHARACTER_FIELD_LABELS[field]}
-                  </h3>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
-                    {value}
-                  </p>
-                </div>
+                <React.Fragment key={field}>
+                  <div className={isLong ? 'lg:col-span-2' : ''}>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {CHARACTER_FIELD_LABELS[field]}
+                    </h3>
+                    <p className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
+                      {value}
+                    </p>
+                  </div>
+                  {field === 'imageMotif' && !isEmpty(character.imageSong) && (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {CHARACTER_FIELD_LABELS.imageSong}
+                      </h3>
+                      {character.imageSongUrl ? (
+                        <a
+                          href={character.imageSongUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                        >
+                          {character.imageSong}
+                          <span className="text-xs">↗</span>
+                        </a>
+                      ) : (
+                        <p className="text-sm text-gray-900 dark:text-gray-100">{character.imageSong}</p>
+                      )}
+                    </div>
+                  )}
+                </React.Fragment>
               )
             })}
-            {!isEmpty(character.imageSong) && (
+            {isEmpty(character.imageMotif) && !isEmpty(character.imageSong) && (
               <div>
                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {CHARACTER_FIELD_LABELS.imageSong}
