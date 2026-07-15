@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import AppNavigation from '@/components/AppNavigation'
 
 export const metadata: Metadata = {
   title: 'キャラクターシート',
@@ -14,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className="antialiased">
+        <AppNavigation />
         {children}
       </body>
     </html>

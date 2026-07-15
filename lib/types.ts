@@ -51,3 +51,44 @@ export type Toast = {
   message: string
   type: ToastType
 }
+
+// 世界観画像メタデータ
+export type WorldImageMetadata = {
+  id: string
+  fileName: string
+  mimeType: string
+  width?: number
+  height?: number
+  fileSize: number
+  title?: string
+  caption?: string
+  altText?: string
+  category?: string
+  sourceNote?: string
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+// バックアップ manifest
+export type WorldBackupManifest = {
+  version: number
+  exportedAt: string
+  images: Array<{
+    id: string
+    filePath: string
+    fileName: string
+    mimeType: string
+    fileSize: number
+    width?: number
+    height?: number
+    title?: string
+    caption?: string
+    altText?: string
+    category?: string
+    sourceNote?: string
+    sortOrder: number
+    createdAt: string
+    updatedAt: string
+  }>
+}

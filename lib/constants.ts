@@ -57,3 +57,14 @@ export const LONG_TEXT_FIELDS = [
   'changeAndEnding',
   'other',
 ] as const
+
+// 世界観ギャラリー用定数
+export const WORLD_DB_NAME = 'novel-world-gallery'
+export const WORLD_DB_VERSION = 1
+export const WORLD_IMAGES_STORE = 'world-images'
+export const WORLD_BLOBS_STORE = 'world-blobs'
+export const MAX_IMAGE_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const
+export const WORLD_DATA_VERSION = 1
+export const MAX_ZIP_FILES = 500
+export const MAX_ZIP_SIZE = 500 * 1024 * 1024 // 500MB
