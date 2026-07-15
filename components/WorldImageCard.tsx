@@ -18,7 +18,7 @@ export default function WorldImageCard({ meta, objectURL, onView }: Props) {
       {objectURL ? (
         <img
           src={objectURL}
-          alt={meta.altText ?? meta.title ?? meta.fileName}
+          alt={meta.title ?? meta.fileName}
           loading="lazy"
           className="w-full h-full object-cover"
           onError={(e) => {

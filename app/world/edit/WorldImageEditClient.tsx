@@ -20,9 +20,7 @@ export default function WorldImageEditClient() {
   // フォーム状態
   const [title, setTitle] = useState('')
   const [caption, setCaption] = useState('')
-  const [altText, setAltText] = useState('')
   const [category, setCategory] = useState('')
-  const [sourceNote, setSourceNote] = useState('')
 
   useEffect(() => {
     if (!id) {
@@ -43,9 +41,7 @@ export default function WorldImageEditClient() {
       setMeta(m)
       setTitle(m.title ?? '')
       setCaption(m.caption ?? '')
-      setAltText(m.altText ?? '')
       setCategory(m.category ?? '')
-      setSourceNote(m.sourceNote ?? '')
 
       const blob = await getBlob(id)
       if (blob) {
@@ -88,9 +84,7 @@ export default function WorldImageEditClient() {
         ...meta,
         title: normalizeMetadataText(title),
         caption: normalizeMetadataText(caption),
-        altText: normalizeMetadataText(altText),
         category: normalizeMetadataText(category),
-        sourceNote: normalizeMetadataText(sourceNote),
       })
       setIsDirty(false)
       router.push('/world')
@@ -147,15 +141,11 @@ export default function WorldImageEditClient() {
             <div className="flex justify-center">
               <img
                 src={previewURL}
-                alt={meta.altText ?? meta.title ?? meta.fileName}
+                alt={meta.title ?? meta.fileName}
                 className="max-h-60 max-w-full object-contain rounded-lg"
               />
             </div>
           )}
-
-          <p className="text-xs text-gray-400">
-            ファイル名: {meta.fileName} ({(meta.fileSize / 1024).toFixed(1)} KB)
-          </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -192,30 +182,6 @@ export default function WorldImageEditClient() {
                 rows={3}
                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none"
                 placeholder="画像の説明"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                ALTテキスト
-              </label>
-              <input
-                type="text"
-                value={altText}
-                onChange={(e) => handleChange(setAltText)(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="代替テキスト"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                出典メモ
-              </label>
-              <input
-                type="text"
-                value={sourceNote}
-                onChange={(e) => handleChange(setSourceNote)(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                placeholder="出典・参考元"
               />
             </div>
           </div>

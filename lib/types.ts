@@ -62,9 +62,7 @@ export type WorldImageMetadata = {
   fileSize: number
   title?: string
   caption?: string
-  altText?: string
   category?: string
-  sourceNote?: string
   sortOrder: number
   createdAt: string
   updatedAt: string
@@ -84,9 +82,7 @@ export type WorldBackupManifest = {
     height?: number
     title?: string
     caption?: string
-    altText?: string
     category?: string
-    sourceNote?: string
     sortOrder: number
     createdAt: string
     updatedAt: string

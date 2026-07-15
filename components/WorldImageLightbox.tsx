@@ -92,7 +92,7 @@ export default function WorldImageLightbox({
           {objectURL ? (
             <img
               src={objectURL}
-              alt={current.altText ?? current.title ?? current.fileName}
+              alt={current.title ?? current.fileName}
               className="max-h-[80vh] max-w-full object-contain"
             />
           ) : (
@@ -135,12 +135,6 @@ export default function WorldImageLightbox({
               {current.category}
             </span>
           )}
-          {current.sourceNote && (
-            <p className="text-xs text-gray-400 pt-2 border-t border-gray-700">
-              出典: {current.sourceNote}
-            </p>
-          )}
-
           <p className="text-xs text-gray-500">
             {currentIndex + 1} / {images.length}
           </p>

@@ -10,9 +10,7 @@ type FileEntry = {
   error: string | null
   title: string
   caption: string
-  altText: string
   category: string
-  sourceNote: string
 }
 
 function getImageSize(file: File): Promise<{ width: number; height: number }> {
@@ -49,9 +47,7 @@ export default function WorldImageAddClient() {
         error,
         title: '',
         caption: '',
-        altText: '',
         category: '',
-        sourceNote: '',
       }
     })
     setEntries((prev) => [...prev, ...newEntries])
@@ -113,9 +109,7 @@ export default function WorldImageAddClient() {
             height: size.height || undefined,
             title: normalizeMetadataText(entry.title),
             caption: normalizeMetadataText(entry.caption),
-            altText: normalizeMetadataText(entry.altText),
             category: normalizeMetadataText(entry.category),
-            sourceNote: normalizeMetadataText(entry.sourceNote),
           },
           entry.file
         )
@@ -254,26 +248,6 @@ export default function WorldImageAddClient() {
                         onChange={(e) => updateEntry(idx, 'caption', e.target.value)}
                         className="w-full text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         placeholder="画像の説明"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">ALTテキスト</label>
-                      <input
-                        type="text"
-                        value={entry.altText}
-                        onChange={(e) => updateEntry(idx, 'altText', e.target.value)}
-                        className="w-full text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        placeholder="代替テキスト"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-500 mb-1">出典メモ</label>
-                      <input
-                        type="text"
-                        value={entry.sourceNote}
-                        onChange={(e) => updateEntry(idx, 'sourceNote', e.target.value)}
-                        className="w-full text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        placeholder="出典・参考元"
                       />
                     </div>
                   </div>
