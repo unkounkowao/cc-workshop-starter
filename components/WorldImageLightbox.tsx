@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useCallback, useState } from 'react'
+import Link from 'next/link'
 import type { WorldImageMetadata } from '@/lib/types'
 
 type Props = {
@@ -7,12 +8,33 @@ type Props = {
   objectURLs: Map<string, string>
   initialIndex: number
   onClose: () => void
+  onMoveUp: (id: string) => void
+  onMoveDown: (id: string) => void
+  onDelete: (meta: WorldImageMetadata) => void
 }
 
-export default function WorldImageLightbox({ images, objectURLs, initialIndex, onClose }: Props) {
+export default function WorldImageLightbox({
+  images,
+  objectURLs,
+  initialIndex,
+  onClose,
+  onMoveUp,
+  onMoveDown,
+  onDelete,
+}: Props) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex)
 
   const current = images[currentIndex]
+
+  // 並び替え後に同じ画像を追跡する
+  const currentId = current?.id
+  useEffect(() => {
+    if (!currentId) return
+    const newIdx = images.findIndex((img) => img.id === currentId)
+    if (newIdx >= 0 && newIdx !== currentIndex) {
+      setCurrentIndex(newIdx)
+    }
+  }, [images, currentId, currentIndex])
 
   const goPrev = useCallback(() => {
     setCurrentIndex((i) => (i > 0 ? i - 1 : i))
@@ -32,7 +54,6 @@ export default function WorldImageLightbox({ images, objectURLs, initialIndex, o
     return () => window.removeEventListener('keydown', handleKey)
   }, [onClose, goPrev, goNext])
 
-  // body スクロール制御
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => {
@@ -101,8 +122,8 @@ export default function WorldImageLightbox({ images, objectURLs, initialIndex, o
           )}
         </div>
 
-        {/* 情報エリア */}
-        <div className="md:w-64 p-4 flex flex-col gap-2 text-white shrink-0">
+        {/* 情報・操作エリア */}
+        <div className="md:w-64 p-4 flex flex-col gap-3 text-white shrink-0">
           {current.title && (
             <h2 className="text-lg font-semibold">{current.title}</h2>
           )}
@@ -115,13 +136,54 @@ export default function WorldImageLightbox({ images, objectURLs, initialIndex, o
             </span>
           )}
           {current.sourceNote && (
-            <p className="text-xs text-gray-400 mt-auto pt-2 border-t border-gray-700">
+            <p className="text-xs text-gray-400 pt-2 border-t border-gray-700">
               出典: {current.sourceNote}
             </p>
           )}
-          <p className="text-xs text-gray-500 mt-1">
+
+          <p className="text-xs text-gray-500">
             {currentIndex + 1} / {images.length}
           </p>
+
+          {/* 操作ボタン */}
+          <div className="mt-auto flex flex-col gap-2 pt-3 border-t border-gray-700">
+            <div className="flex gap-2">
+              <Link
+                href={`/world/edit?id=${current.id}`}
+                onClick={onClose}
+                className="flex-1 text-center text-sm py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              >
+                編集
+              </Link>
+              <button
+                type="button"
+                onClick={() => onDelete(current)}
+                className="flex-1 text-sm py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+              >
+                削除
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => onMoveUp(current.id)}
+                disabled={currentIndex === 0}
+                className="flex-1 text-sm py-1.5 rounded-lg bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                aria-label="上へ移動"
+              >
+                ↑ 上へ
+              </button>
+              <button
+                type="button"
+                onClick={() => onMoveDown(current.id)}
+                disabled={currentIndex === images.length - 1}
+                className="flex-1 text-sm py-1.5 rounded-lg bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                aria-label="下へ移動"
+              >
+                ↓ 下へ
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
