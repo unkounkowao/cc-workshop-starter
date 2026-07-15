@@ -135,9 +135,6 @@ export default function WorldImageLightbox({
               {current.category}
             </span>
           )}
-          <p className="text-xs text-gray-500">
-            {currentIndex + 1} / {images.length}
-          </p>
 
           {/* 操作ボタン */}
           <div className="mt-auto flex flex-col gap-2 pt-3 border-t border-gray-700">
