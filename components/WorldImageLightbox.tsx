@@ -74,7 +74,7 @@ export default function WorldImageLightbox({
       onClick={onClose}
     >
       <div
-        className="relative max-w-5xl w-full flex flex-col md:flex-row gap-4 bg-gray-900 rounded-xl overflow-hidden shadow-2xl"
+        className="relative max-w-5xl w-full flex flex-col md:flex-row bg-gray-900 rounded-xl overflow-hidden shadow-2xl max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 閉じるボタン */}
@@ -88,12 +88,12 @@ export default function WorldImageLightbox({
         </button>
 
         {/* 画像エリア */}
-        <div className="flex-1 flex items-center justify-center bg-black min-h-[200px] relative">
+        <div className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
           {objectURL ? (
             <img
               src={objectURL}
               alt={current.title ?? current.fileName}
-              className="max-h-[80vh] max-w-full object-contain"
+              className="max-h-[55vh] md:max-h-[90vh] max-w-full object-contain"
             />
           ) : (
             <div className="text-gray-400 text-sm p-8">画像を読み込めませんでした</div>
@@ -123,7 +123,7 @@ export default function WorldImageLightbox({
         </div>
 
         {/* 情報・操作エリア */}
-        <div className="md:w-64 p-4 flex flex-col gap-3 text-white shrink-0">
+        <div className="md:w-64 p-4 flex flex-col gap-3 text-white shrink-0 overflow-y-auto">
           {current.title && (
             <h2 className="text-lg font-semibold">{current.title}</h2>
           )}
