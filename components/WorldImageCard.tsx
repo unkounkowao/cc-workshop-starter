@@ -12,7 +12,7 @@ export default function WorldImageCard({ meta, objectURL, onView }: Props) {
     <button
       type="button"
       onClick={onView}
-      className="relative w-full aspect-square overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      className="relative w-full aspect-square overflow-hidden rounded-xl bg-sky-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-400"
       aria-label={`${meta.title ?? meta.fileName} を表示`}
     >
       {objectURL ? (
@@ -26,7 +26,7 @@ export default function WorldImageCard({ meta, objectURL, onView }: Props) {
           }}
         />
       ) : (
-        <div className="flex items-center justify-center h-full text-gray-400 dark:text-gray-500 text-sm">
+        <div className="flex items-center justify-center h-full text-slate-400 text-sm">
           読み込み中...
         </div>
       )}

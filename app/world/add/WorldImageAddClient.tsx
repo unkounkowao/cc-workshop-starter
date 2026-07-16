@@ -132,17 +132,17 @@ export default function WorldImageAddClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-10">
+    <div className="min-h-screen pb-10">
       <div className="max-w-3xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
           <button
             type="button"
             onClick={() => router.push('/world')}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors"
           >
             ← 戻る
           </button>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">画像を追加</h1>
+          <h1 className="text-xl font-bold text-slate-800">画像を追加</h1>
         </div>
 
         {/* ドロップゾーン */}
@@ -152,21 +152,21 @@ export default function WorldImageAddClient() {
           onDragLeave={handleDragLeave}
           className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors mb-6 ${
             isDragging
-              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950'
-              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+              ? 'border-sky-400 bg-sky-50'
+              : 'border-sky-100 bg-white'
           }`}
         >
-          <p className="text-gray-500 dark:text-gray-400 mb-3">
+          <p className="text-slate-400 mb-3">
             ここに画像をドロップ、または
           </p>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors text-sm"
+            className="px-4 py-2 rounded-full bg-sky-500 text-white hover:bg-sky-600 transition-colors text-sm"
           >
             ファイルを選択
           </button>
-          <p className="text-xs text-gray-400 mt-2">JPEG / PNG / WebP / GIF, 最大10MB</p>
+          <p className="text-xs text-slate-400 mt-2">JPEG / PNG / WebP / GIF, 最大10MB</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -190,20 +190,20 @@ export default function WorldImageAddClient() {
             {entries.map((entry, idx) => (
               <div
                 key={idx}
-                className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 flex flex-col gap-3"
+                className="bg-white rounded-xl border border-sky-100 p-4 flex flex-col gap-3"
               >
                 <div className="flex gap-3 items-start">
                   {/* プレビュー */}
-                  <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <div className="w-20 h-20 shrink-0 rounded-lg overflow-hidden bg-sky-50 flex items-center justify-center">
                     {entry.preview ? (
                       <img src={entry.preview} alt={entry.file.name} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-xs text-gray-400">エラー</span>
+                      <span className="text-xs text-slate-400">エラー</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{entry.file.name}</p>
-                    <p className="text-xs text-gray-400">{(entry.file.size / 1024).toFixed(1)} KB</p>
+                    <p className="text-sm font-medium text-slate-800 truncate">{entry.file.name}</p>
+                    <p className="text-xs text-slate-400">{(entry.file.size / 1024).toFixed(1)} KB</p>
                     {entry.error && (
                       <p className="text-xs text-red-500 mt-1">{entry.error}</p>
                     )}
@@ -211,7 +211,7 @@ export default function WorldImageAddClient() {
                   <button
                     type="button"
                     onClick={() => removeEntry(idx)}
-                    className="text-gray-400 hover:text-red-500 text-xl leading-none"
+                    className="text-slate-400 hover:text-red-500 text-xl leading-none"
                     aria-label="削除"
                   >
                     ×
@@ -221,32 +221,32 @@ export default function WorldImageAddClient() {
                 {!entry.error && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">タイトル</label>
+                      <label className="block text-xs text-slate-500 mb-1">タイトル</label>
                       <input
                         type="text"
                         value={entry.title}
                         onChange={(e) => updateEntry(idx, 'title', e.target.value)}
-                        className="w-full text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        className="w-full text-sm px-2 py-1.5 rounded-lg border border-sky-100 bg-white text-slate-800"
                         placeholder="画像のタイトル"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-gray-500 mb-1">カテゴリー</label>
+                      <label className="block text-xs text-slate-500 mb-1">カテゴリー</label>
                       <input
                         type="text"
                         value={entry.category}
                         onChange={(e) => updateEntry(idx, 'category', e.target.value)}
-                        className="w-full text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        className="w-full text-sm px-2 py-1.5 rounded-lg border border-sky-100 bg-white text-slate-800"
                         placeholder="例: 人物, 風景, 道具"
                       />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-xs text-gray-500 mb-1">キャプション</label>
+                      <label className="block text-xs text-slate-500 mb-1">キャプション</label>
                       <input
                         type="text"
                         value={entry.caption}
                         onChange={(e) => updateEntry(idx, 'caption', e.target.value)}
-                        className="w-full text-sm px-2 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                        className="w-full text-sm px-2 py-1.5 rounded-lg border border-sky-100 bg-white text-slate-800"
                         placeholder="画像の説明"
                       />
                     </div>
@@ -263,7 +263,7 @@ export default function WorldImageAddClient() {
             <button
               type="button"
               onClick={() => router.push('/world')}
-              className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[44px]"
+              className="px-4 py-2 text-sm rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors min-h-[44px]"
             >
               キャンセル
             </button>
@@ -271,7 +271,7 @@ export default function WorldImageAddClient() {
               type="button"
               onClick={handleSubmit}
               disabled={isProcessing}
-              className="px-6 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors min-h-[44px] disabled:opacity-60"
+              className="px-6 py-2 text-sm font-medium rounded-full bg-sky-500 text-white hover:bg-sky-600 transition-colors min-h-[44px] disabled:opacity-60"
             >
               {isProcessing ? '登録中...' : `${entries.filter((e) => !e.error).length}件を登録`}
             </button>

@@ -82,7 +82,7 @@ export default function WorldBackupPanel({ onRestored, onToast }: Props) {
         type="button"
         onClick={handleBackup}
         disabled={isBackingUp}
-        className="px-3 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-h-[40px] disabled:opacity-60"
+        className="px-3 py-2 text-sm text-white/90 border border-white/40 rounded-full hover:bg-white/20 transition-colors min-h-[40px] disabled:opacity-60"
       >
         {isBackingUp ? 'バックアップ中...' : 'バックアップ'}
       </button>
@@ -91,7 +91,7 @@ export default function WorldBackupPanel({ onRestored, onToast }: Props) {
         <select
           value={restoreMode}
           onChange={(e) => setRestoreMode(e.target.value as 'replace' | 'append')}
-          className="text-sm px-2 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 min-h-[40px]"
+          className="text-sm px-2 py-2 rounded-full border border-white/40 bg-transparent text-white/90 min-h-[40px]"
           aria-label="復元モード"
         >
           <option value="append">追加復元</option>
@@ -101,7 +101,7 @@ export default function WorldBackupPanel({ onRestored, onToast }: Props) {
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isRestoring}
-          className="px-3 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors min-h-[40px] disabled:opacity-60"
+          className="px-3 py-2 text-sm text-white/90 border border-white/40 rounded-full hover:bg-white/20 transition-colors min-h-[40px] disabled:opacity-60"
         >
           {isRestoring ? '復元中...' : '復元'}
         </button>

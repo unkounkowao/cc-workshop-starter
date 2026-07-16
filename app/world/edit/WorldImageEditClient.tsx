@@ -97,7 +97,7 @@ export default function WorldImageEditClient() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <p className="text-gray-500">読み込み中...</p>
       </div>
     )
@@ -105,12 +105,12 @@ export default function WorldImageEditClient() {
 
   if (error || !meta) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-red-500">{error ?? '不明なエラー'}</p>
         <button
           type="button"
           onClick={() => router.push('/world')}
-          className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+          className="px-4 py-2 rounded-full bg-sky-500 text-white hover:bg-sky-600 transition-colors"
         >
           ギャラリーに戻る
         </button>
@@ -119,23 +119,23 @@ export default function WorldImageEditClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-10">
+    <div className="min-h-screen pb-10">
       <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
           <button
             type="button"
             onClick={() => router.push('/world')}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors"
           >
             ← 戻る
           </button>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">画像を編集</h1>
+          <h1 className="text-xl font-bold text-slate-800">画像を編集</h1>
           {isDirty && (
             <span className="text-xs text-yellow-600 dark:text-yellow-400">未保存の変更あり</span>
           )}
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col gap-4">
+        <div className="bg-white rounded-xl border border-sky-100 p-6 flex flex-col gap-4">
           {/* プレビュー */}
           {previewURL && (
             <div className="flex justify-center">
@@ -149,38 +149,38 @@ export default function WorldImageEditClient() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-slate-600 mb-1">
                 タイトル
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => handleChange(setTitle)(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-sky-100 bg-white text-slate-800"
                 placeholder="画像のタイトル"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-slate-600 mb-1">
                 カテゴリー
               </label>
               <input
                 type="text"
                 value={category}
                 onChange={(e) => handleChange(setCategory)(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-sky-100 bg-white text-slate-800"
                 placeholder="例: 人物, 風景, 道具"
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-slate-600 mb-1">
                 キャプション
               </label>
               <textarea
                 value={caption}
                 onChange={(e) => handleChange(setCaption)(e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 resize-none"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-sky-100 bg-white text-slate-800 resize-none"
                 placeholder="画像の説明"
               />
             </div>
@@ -194,7 +194,7 @@ export default function WorldImageEditClient() {
             <button
               type="button"
               onClick={() => router.push('/world')}
-              className="px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors min-h-[44px]"
+              className="px-4 py-2 text-sm rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors min-h-[44px]"
             >
               キャンセル
             </button>
@@ -202,7 +202,7 @@ export default function WorldImageEditClient() {
               type="button"
               onClick={handleSave}
               disabled={isSaving}
-              className="px-6 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors min-h-[44px] disabled:opacity-60"
+              className="px-6 py-2 text-sm font-medium rounded-full bg-sky-500 text-white hover:bg-sky-600 transition-colors min-h-[44px] disabled:opacity-60"
             >
               {isSaving ? '保存中...' : '保存'}
             </button>

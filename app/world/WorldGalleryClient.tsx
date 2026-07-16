@@ -114,21 +114,25 @@ export default function WorldGalleryClient() {
   }, [deleteTarget, addToast, loadImages])
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* ヘッダー */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-3">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">世界観ギャラリー</h1>
-            <div className="flex gap-2 items-center">
-              <Link
-                href="/world/add"
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors min-h-[40px] flex items-center"
-              >
-                + 追加
-              </Link>
-              <WorldBackupPanel onRestored={loadImages} onToast={addToast} />
-            </div>
+    <div className="min-h-screen">
+      {/* ヒーローバナー */}
+      <div className="bg-gradient-to-br from-sky-400 to-sky-600 px-4 py-6 text-white">
+        <div className="max-w-6xl mx-auto flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
+            <h1 className="text-3xl font-bold tracking-tight">世界観ギャラリー</h1>
+            {images.length > 0 && (
+              <p className="text-sky-200 text-sm mt-1">{images.length}枚</p>
+            )}
+          </div>
+          <div className="flex gap-2 items-center">
+            <Link
+              href="/world/add"
+              className="px-5 py-2.5 text-sm font-medium text-sky-700 bg-white hover:bg-sky-50 rounded-full transition-colors shadow-sm"
+            >
+              + 追加
+            </Link>
+            <WorldBackupPanel onRestored={loadImages} onToast={addToast} />
           </div>
         </div>
       </div>
@@ -136,13 +140,14 @@ export default function WorldGalleryClient() {
       {/* メインコンテンツ */}
       <main className="max-w-6xl mx-auto px-4 py-6">
         {isLoading ? (
-          <div className="text-center py-20 text-gray-500">読み込み中...</div>
+          <div className="text-center py-20 text-slate-400">読み込み中...</div>
         ) : images.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">画像がまだ登録されていません</p>
+          <div className="text-center py-24">
+            <div className="text-5xl mb-4">🖼️</div>
+            <p className="text-slate-400 mb-6 text-sm">画像がまだ登録されていません</p>
             <Link
               href="/world/add"
-              className="px-6 py-3 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full transition-colors shadow-sm"
             >
               最初の画像を追加する
             </Link>
