@@ -259,7 +259,7 @@ export default function MemoPage() {
             }}
             placeholder="出来事を記録する..."
             rows={2}
-            className="w-full text-sm text-slate-700 leading-relaxed resize-none focus:outline-none placeholder:text-slate-300"
+            className="w-full text-sm text-slate-700 leading-relaxed resize-y focus:outline-none placeholder:text-slate-300"
           />
 
           {characters.length > 0 && (

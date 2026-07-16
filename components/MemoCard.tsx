@@ -59,7 +59,7 @@ export default function MemoCard({
           onChange={(e) => setEditContent(e.target.value)}
           rows={3}
           autoFocus
-          className="w-full text-sm text-slate-700 leading-relaxed resize-none focus:outline-none"
+          className="w-full text-sm text-slate-700 leading-relaxed resize-y focus:outline-none"
         />
         {characters.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-sky-50">
