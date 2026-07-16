@@ -52,6 +52,21 @@ export type Toast = {
   type: ToastType
 }
 
+// 出来事メモ
+export type Memo = {
+  id: string
+  content: string
+  characterIds: string[]
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type MemoData = {
+  version: number
+  memos: Memo[]
+}
+
 // 世界観画像メタデータ
 export type WorldImageMetadata = {
   id: string

@@ -17,6 +17,7 @@ export default function AppNavigation() {
 
   const isCharacters = normalized === '/' || normalized.startsWith('/character')
   const isWorld = normalized.startsWith('/world')
+  const isMemo = normalized.startsWith('/memo')
 
   const linkClass = (active: boolean) =>
     `px-4 py-1.5 text-sm font-medium rounded-full transition-all ${
@@ -35,6 +36,9 @@ export default function AppNavigation() {
           </Link>
           <Link href="/world" className={linkClass(isWorld)}>
             世界観
+          </Link>
+          <Link href="/memo" className={linkClass(isMemo)}>
+            出来事メモ
           </Link>
         </div>
       </div>
