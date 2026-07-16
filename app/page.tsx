@@ -70,19 +70,22 @@ export default function HomePage() {
   if (!mounted) return null
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen">
       {/* ヘッダー */}
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <header className="bg-white border-b border-sky-100 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-              キャラクターシート
-            </h1>
+            <div>
+              <h1 className="text-base font-bold text-slate-800">キャラクター一覧</h1>
+              {characters.length > 0 && (
+                <p className="text-xs text-slate-400">{characters.length}人</p>
+              )}
+            </div>
             <div className="flex items-center gap-2 flex-wrap">
               <GistSync data={allData} onSynced={() => setCharacters(loadCharacters())} onToast={addToast} />
               <Link
                 href="/characters/new"
-                className="px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors min-h-[44px] flex items-center"
+                className="px-4 py-2 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full transition-colors min-h-[40px] flex items-center shadow-sm"
               >
                 ＋ 追加
               </Link>
@@ -94,13 +97,14 @@ export default function HomePage() {
       {/* メインコンテンツ */}
       <main className="max-w-6xl mx-auto px-4 py-6">
         {characters.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">
-              キャラクターがまだ登録されていません。
+          <div className="text-center py-24">
+            <div className="text-5xl mb-4">📝</div>
+            <p className="text-slate-400 mb-6 text-sm">
+              まだキャラクターが登録されていません。
             </p>
             <Link
               href="/characters/new"
-              className="inline-flex items-center px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors"
+              className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full transition-colors shadow-sm"
             >
               キャラクターを追加
             </Link>

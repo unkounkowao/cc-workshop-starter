@@ -233,7 +233,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
   return (
     <form onSubmit={handleSubmit} noValidate>
       {/* 操作ボタン（上部） */}
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-3 mb-8 pb-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-3 mb-8 pb-4 border-b border-sky-100 bg-sky-50">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
           {initialCharacter ? 'キャラクターを編集' : '新規キャラクター'}
         </h1>
@@ -241,13 +241,13 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
           <button
             type="button"
             onClick={handleCancel}
-            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[44px]"
+            className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-full hover:bg-slate-50 transition-colors min-h-[44px]"
           >
             キャンセル
           </button>
           <button
             type="submit"
-            className="px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors min-h-[44px]"
+            className="px-4 py-2 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full transition-colors min-h-[44px]"
           >
             保存
           </button>
@@ -277,7 +277,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-400 min-h-[44px]"
             aria-describedby={errors.name ? 'name-error' : undefined}
           />
           {errors.name && (
@@ -302,7 +302,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
                 type="text"
                 value={form[field] as string}
                 onChange={(e) => update(field, e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-400 min-h-[44px]"
               />
             </div>
           ))}
@@ -354,7 +354,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
                   value={form[field] as string}
                   onChange={(e) => update(field, e.target.value)}
                   rows={field === 'imageMotif' ? 2 : 4}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y leading-relaxed"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-400 resize-y leading-relaxed"
                 />
               </div>
               {field === 'imageMotif' && (
@@ -372,7 +372,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
                       value={form.imageSong}
                       onChange={(e) => update('imageSong', e.target.value)}
                       placeholder="曲名"
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-400 min-h-[44px]"
                     />
                   </div>
                   <div>
@@ -388,7 +388,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
                       value={form.imageSongUrl}
                       onChange={(e) => update('imageSongUrl', e.target.value)}
                       placeholder="https://..."
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 min-h-[44px]"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-sky-400 min-h-[44px]"
                     />
                   </div>
                 </>
@@ -399,17 +399,17 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
       </fieldset>
 
       {/* 操作ボタン（下部） */}
-      <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex justify-end gap-2 pt-4 border-t border-sky-100">
         <button
           type="button"
           onClick={handleCancel}
-          className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[44px]"
+          className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-full hover:bg-slate-50 transition-colors min-h-[44px]"
         >
           キャンセル
         </button>
         <button
           type="submit"
-          className="px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors min-h-[44px]"
+          className="px-4 py-2 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full transition-colors min-h-[44px]"
         >
           保存
         </button>

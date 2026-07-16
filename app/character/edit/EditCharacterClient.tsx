@@ -42,12 +42,12 @@ export default function EditCharacterClient() {
 
   if (!character) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-sky-50 flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-gray-500 dark:text-gray-400 mb-4">
             キャラクターが見つかりません
           </p>
-          <Link href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+          <Link href="/" className="text-sky-500 hover:underline">
             一覧に戻る
           </Link>
         </div>
@@ -56,7 +56,7 @@ export default function EditCharacterClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-sky-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <CharacterForm
           initialCharacter={character}

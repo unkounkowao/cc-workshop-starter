@@ -32,12 +32,12 @@ export default function CharacterDetailClient() {
 
   if (!character) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-sky-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
+          <p className="text-slate-400 mb-4">
             キャラクターが見つかりません
           </p>
-          <Link href="/" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+          <Link href="/" className="text-sky-500 hover:underline">
             一覧に戻る
           </Link>
         </div>
@@ -46,33 +46,33 @@ export default function CharacterDetailClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+    <div className="min-h-screen bg-sky-50">
+      <header className="bg-white border-b border-sky-100 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
           <Link
             href="/"
-            className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 min-h-[44px]"
+            className="text-sm text-sky-500 hover:underline flex items-center gap-1 min-h-[44px]"
           >
             ← 一覧へ
           </Link>
           <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-lg font-bold text-slate-800">
               {character.name}
             </h1>
             {character.nameReading && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">{character.nameReading}</p>
+              <p className="text-sm text-slate-400">{character.nameReading}</p>
             )}
           </div>
           <div className="flex gap-2">
             <Link
               href={`/character/edit?id=${character.id}`}
-              className="px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-700 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors min-h-[44px] flex items-center"
+              className="px-4 py-2 text-sm text-sky-600 border border-sky-200 rounded-full hover:bg-sky-50 transition-colors min-h-[40px] flex items-center"
             >
               編集
             </Link>
             <button
               onClick={() => setShowDeleteDialog(true)}
-              className="px-4 py-2 text-sm text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors min-h-[44px]"
+              className="px-4 py-2 text-sm text-red-500 border border-red-200 rounded-full hover:bg-red-50 transition-colors min-h-[40px]"
             >
               削除
             </button>

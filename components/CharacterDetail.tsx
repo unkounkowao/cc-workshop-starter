@@ -14,7 +14,7 @@ function FieldText({ value }: { value: string }) {
   return (
     <div className="space-y-3">
       {paragraphs.map((para, i) => (
-        <p key={i} className="text-sm text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">
+        <p key={i} className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
           {para}
         </p>
       ))}
@@ -27,7 +27,7 @@ export default function CharacterDetail({ character }: Props) {
     <div>
       {/* 基本情報 */}
       <section className="mb-8">
-        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+        <h2 className="text-xs font-semibold text-sky-500 uppercase tracking-widest mb-4">
           基本情報
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -36,10 +36,10 @@ export default function CharacterDetail({ character }: Props) {
             if (isEmpty(value)) return null
             return (
               <div key={field}>
-                <dt className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">
+                <dt className="text-xs text-slate-400 mb-0.5">
                   {CHARACTER_FIELD_LABELS[field]}
                 </dt>
-                <dd className="text-sm text-gray-900 dark:text-gray-100 font-medium">{value}</dd>
+                <dd className="text-sm text-slate-800 font-medium">{value}</dd>
               </div>
             )
           })}
@@ -49,7 +49,7 @@ export default function CharacterDetail({ character }: Props) {
       {/* イメージカラー */}
       {!isEmptyColorArray(character.imageColors) && (
         <section className="mb-8">
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+          <h2 className="text-xs font-semibold text-sky-500 uppercase tracking-widest mb-4">
             イメージカラー
           </h2>
           <div className="flex flex-wrap gap-3">
@@ -63,7 +63,7 @@ export default function CharacterDetail({ character }: Props) {
       {/* キャラクター設定 */}
       {(LONG_TEXT_FIELDS.some((field) => !isEmpty(character[field])) || !isEmpty(character.imageSong)) && (
         <section>
-          <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+          <h2 className="text-xs font-semibold text-sky-500 uppercase tracking-widest mb-4">
             キャラクター設定
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -78,7 +78,7 @@ export default function CharacterDetail({ character }: Props) {
                   <React.Fragment key={field}>
                     {!isEmpty(value) && (
                       <div>
-                        <h3 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <h3 className="text-sm font-semibold text-slate-600 mb-2">
                           {CHARACTER_FIELD_LABELS[field]}
                         </h3>
                         <FieldText value={value as string} />
@@ -86,7 +86,7 @@ export default function CharacterDetail({ character }: Props) {
                     )}
                     {!isEmpty(character.imageSong) && (
                       <div>
-                        <h3 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <h3 className="text-sm font-semibold text-slate-600 mb-2">
                           {CHARACTER_FIELD_LABELS.imageSong}
                         </h3>
                         {character.imageSongUrl ? (
@@ -94,13 +94,13 @@ export default function CharacterDetail({ character }: Props) {
                             href={character.imageSongUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                            className="inline-flex items-center gap-1 text-sm text-sky-500 hover:underline"
                           >
                             {character.imageSong}
                             <span className="text-xs">↗</span>
                           </a>
                         ) : (
-                          <p className="text-sm text-gray-900 dark:text-gray-100">{character.imageSong}</p>
+                          <p className="text-sm text-slate-700">{character.imageSong}</p>
                         )}
                       </div>
                     )}
@@ -111,7 +111,7 @@ export default function CharacterDetail({ character }: Props) {
               if (isEmpty(value)) return null
               return (
                 <div key={field} className={isLong ? 'lg:col-span-2' : ''}>
-                  <h3 className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <h3 className="text-sm font-semibold text-slate-600 mb-2">
                     {CHARACTER_FIELD_LABELS[field]}
                   </h3>
                   <FieldText value={value as string} />
