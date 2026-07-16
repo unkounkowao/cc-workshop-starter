@@ -77,9 +77,6 @@ export default function HomePage() {
           <div>
             <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
             <h1 className="text-3xl font-bold tracking-tight">キャラクター</h1>
-            {characters.length > 0 && (
-              <p className="text-sky-200 text-sm mt-1">{characters.length}人のキャラクター</p>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <GistSync data={allData} onSynced={() => setCharacters(loadCharacters())} onToast={addToast} />

@@ -213,9 +213,6 @@ export default function MemoPage() {
           <div>
             <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
             <h1 className="text-3xl font-bold tracking-tight">出来事メモ</h1>
-            {memos.length > 0 && (
-              <p className="text-sky-200 text-sm mt-1">{memos.length}件</p>
-            )}
           </div>
           <button
             onClick={handleManualSync}

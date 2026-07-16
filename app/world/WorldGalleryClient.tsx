@@ -121,9 +121,6 @@ export default function WorldGalleryClient() {
           <div>
             <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
             <h1 className="text-3xl font-bold tracking-tight">世界観ギャラリー</h1>
-            {images.length > 0 && (
-              <p className="text-sky-200 text-sm mt-1">{images.length}枚</p>
-            )}
           </div>
           <div className="flex gap-2 items-center">
             <Link
