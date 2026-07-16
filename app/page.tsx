@@ -71,34 +71,33 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* ヘッダー */}
-      <header className="bg-white border-b border-sky-100 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div>
-              <h1 className="text-base font-bold text-slate-800">キャラクター一覧</h1>
-              {characters.length > 0 && (
-                <p className="text-xs text-slate-400">{characters.length}人</p>
-              )}
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <GistSync data={allData} onSynced={() => setCharacters(loadCharacters())} onToast={addToast} />
-              <Link
-                href="/characters/new"
-                className="px-4 py-2 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full transition-colors min-h-[40px] flex items-center shadow-sm"
-              >
-                ＋ 追加
-              </Link>
-            </div>
+      {/* ヒーローバナー */}
+      <div className="bg-gradient-to-br from-sky-400 to-sky-600 px-4 py-10 text-white">
+        <div className="max-w-6xl mx-auto flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
+            <h1 className="text-3xl font-bold tracking-tight">キャラクター</h1>
+            {characters.length > 0 && (
+              <p className="text-sky-200 text-sm mt-1">{characters.length}人のキャラクター</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <GistSync data={allData} onSynced={() => setCharacters(loadCharacters())} onToast={addToast} />
+            <Link
+              href="/characters/new"
+              className="px-5 py-2.5 text-sm font-medium text-sky-700 bg-white hover:bg-sky-50 rounded-full transition-colors shadow-sm"
+            >
+              ＋ 追加
+            </Link>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* メインコンテンツ */}
       <main className="max-w-6xl mx-auto px-4 py-6">
         {characters.length === 0 ? (
-          <div className="text-center py-24">
-            <div className="text-5xl mb-4">📝</div>
+          <div className="text-center py-20">
+            <div className="text-5xl mb-4">✏️</div>
             <p className="text-slate-400 mb-6 text-sm">
               まだキャラクターが登録されていません。
             </p>
@@ -106,7 +105,7 @@ export default function HomePage() {
               href="/characters/new"
               className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full transition-colors shadow-sm"
             >
-              キャラクターを追加
+              最初のキャラクターを追加
             </Link>
           </div>
         ) : (

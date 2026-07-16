@@ -37,7 +37,7 @@ export default function CharacterDetailClient() {
           <p className="text-slate-400 mb-4">
             キャラクターが見つかりません
           </p>
-          <Link href="/" className="text-sky-500 hover:underline">
+          <Link href="/" className="text-sky-700 hover:underline">
             一覧に戻る
           </Link>
         </div>
@@ -51,7 +51,7 @@ export default function CharacterDetailClient() {
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
           <Link
             href="/"
-            className="text-sm text-sky-500 hover:underline flex items-center gap-1 min-h-[44px]"
+            className="text-sm text-sky-700 hover:underline flex items-center gap-1 min-h-[44px]"
           >
             ← 一覧へ
           </Link>
@@ -66,7 +66,7 @@ export default function CharacterDetailClient() {
           <div className="flex gap-2">
             <Link
               href={`/character/edit?id=${character.id}`}
-              className="px-4 py-2 text-sm text-sky-600 border border-sky-200 rounded-full hover:bg-sky-50 transition-colors min-h-[40px] flex items-center"
+              className="px-4 py-2 text-sm text-sky-700 border border-sky-300 rounded-full hover:bg-sky-50 transition-colors min-h-[40px] flex items-center"
             >
               編集
             </Link>

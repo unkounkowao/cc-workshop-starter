@@ -181,7 +181,7 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors min-h-[44px]"
+        className="px-3 py-2 text-sm text-white/90 border border-white/40 rounded-full hover:bg-white/20 transition-colors min-h-[40px]"
         title="クロスデバイス同期（GitHub Gist）"
         aria-label="データ同期設定"
       >

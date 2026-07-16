@@ -27,7 +27,7 @@ export default function CharacterDetail({ character }: Props) {
     <div>
       {/* 基本情報 */}
       <section className="mb-8">
-        <h2 className="text-xs font-semibold text-sky-500 uppercase tracking-widest mb-4">
+        <h2 className="text-xs font-semibold text-sky-700 uppercase tracking-widest mb-4">
           基本情報
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -49,7 +49,7 @@ export default function CharacterDetail({ character }: Props) {
       {/* イメージカラー */}
       {!isEmptyColorArray(character.imageColors) && (
         <section className="mb-8">
-          <h2 className="text-xs font-semibold text-sky-500 uppercase tracking-widest mb-4">
+          <h2 className="text-xs font-semibold text-sky-700 uppercase tracking-widest mb-4">
             イメージカラー
           </h2>
           <div className="flex flex-wrap gap-3">
@@ -63,7 +63,7 @@ export default function CharacterDetail({ character }: Props) {
       {/* キャラクター設定 */}
       {(LONG_TEXT_FIELDS.some((field) => !isEmpty(character[field])) || !isEmpty(character.imageSong)) && (
         <section>
-          <h2 className="text-xs font-semibold text-sky-500 uppercase tracking-widest mb-4">
+          <h2 className="text-xs font-semibold text-sky-700 uppercase tracking-widest mb-4">
             キャラクター設定
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -94,7 +94,7 @@ export default function CharacterDetail({ character }: Props) {
                             href={character.imageSongUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm text-sky-500 hover:underline"
+                            className="inline-flex items-center gap-1 text-sm text-sky-700 hover:underline"
                           >
                             {character.imageSong}
                             <span className="text-xs">↗</span>
