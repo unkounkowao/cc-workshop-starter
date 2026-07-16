@@ -94,7 +94,7 @@ export default function CharacterDetail({ character }: Props) {
                             href={character.imageSongUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-sm text-sky-700 hover:underline"
+                            className="inline-flex items-center gap-1 text-sm text-sky-700 underline underline-offset-2 hover:text-sky-900"
                           >
                             {character.imageSong}
                             <span className="text-xs">↗</span>

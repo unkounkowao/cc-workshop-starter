@@ -72,7 +72,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* ヒーローバナー */}
-      <div className="bg-gradient-to-br from-sky-400 to-sky-600 px-4 py-10 text-white">
+      <div className="bg-gradient-to-br from-sky-400 to-sky-600 px-4 py-6 text-white">
         <div className="max-w-6xl mx-auto flex items-end justify-between gap-4 flex-wrap">
           <div>
             <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>

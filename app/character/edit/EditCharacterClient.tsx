@@ -47,7 +47,7 @@ export default function EditCharacterClient() {
           <p className="text-gray-500 dark:text-gray-400 mb-4">
             キャラクターが見つかりません
           </p>
-          <Link href="/" className="text-sky-500 hover:underline">
+          <Link href="/" className="text-sky-700 underline underline-offset-2 hover:text-sky-900">
             一覧に戻る
           </Link>
         </div>
