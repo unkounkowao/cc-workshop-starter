@@ -118,7 +118,7 @@ export default function MemoCard({
       <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-50">
         <time className="text-xs text-slate-300">{formatDate(memo.createdAt)}</time>
 
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => onMoveUp(memo.id)}
             disabled={index === 0}
