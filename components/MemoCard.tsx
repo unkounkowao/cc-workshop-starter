@@ -53,22 +53,22 @@ export default function MemoCard({
 
   if (editing) {
     return (
-      <div className="bg-white rounded-2xl border border-sky-200 shadow-sm p-4">
+      <div className="bg-white rounded-xl border border-sky-200 shadow-sm p-3">
         <textarea
           value={editContent}
           onChange={(e) => setEditContent(e.target.value)}
-          rows={4}
+          rows={3}
           autoFocus
           className="w-full text-sm text-slate-700 leading-relaxed resize-none focus:outline-none"
         />
         {characters.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-sky-50">
+          <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-sky-50">
             {characters.map((c) => (
               <button
                 key={c.id}
                 type="button"
                 onClick={() => toggleChar(c.id)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
                   editCharIds.includes(c.id)
                     ? 'bg-sky-500 text-white border-sky-500'
                     : 'bg-white text-slate-500 border-slate-200 hover:border-sky-300'
@@ -79,17 +79,17 @@ export default function MemoCard({
             ))}
           </div>
         )}
-        <div className="flex justify-end gap-2 mt-3">
+        <div className="flex justify-end gap-2 mt-2">
           <button
             onClick={handleCancelEdit}
-            className="text-xs text-slate-400 hover:text-slate-600 px-3 py-1.5 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors"
+            className="text-xs text-slate-400 hover:text-slate-600 px-2.5 py-1 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors"
           >
             キャンセル
           </button>
           <button
             onClick={handleSave}
             disabled={!editContent.trim()}
-            className="text-xs text-white bg-sky-500 hover:bg-sky-600 px-3 py-1.5 rounded-full disabled:opacity-40 transition-colors"
+            className="text-xs text-white bg-sky-500 hover:bg-sky-600 px-2.5 py-1 rounded-full disabled:opacity-40 transition-colors"
           >
             保存
           </button>
@@ -99,15 +99,15 @@ export default function MemoCard({
   }
 
   return (
-    <div className="group bg-white rounded-2xl border border-sky-100 shadow-sm p-4 hover:border-sky-200 transition-colors">
+    <div className="group bg-white rounded-xl border border-sky-100 shadow-sm p-3 hover:border-sky-200 transition-colors">
       <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{memo.content}</p>
 
       {taggedChars.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-3">
+        <div className="flex flex-wrap gap-1 mt-2">
           {taggedChars.map((c) => (
             <span
               key={c.id}
-              className="text-xs bg-sky-50 text-sky-700 px-2.5 py-0.5 rounded-full border border-sky-100"
+              className="text-xs bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full border border-sky-100"
             >
               {c.name}
             </span>
@@ -115,7 +115,7 @@ export default function MemoCard({
         </div>
       )}
 
-      <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
+      <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-50">
         <time className="text-xs text-slate-300">{formatDate(memo.createdAt)}</time>
 
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

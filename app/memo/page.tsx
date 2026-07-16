@@ -227,10 +227,10 @@ export default function MemoPage() {
         </div>
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 py-6 space-y-3">
+      <main className="max-w-3xl mx-auto px-4 py-4 space-y-2">
         {memos.length === 0 && (
-          <div className="text-center py-16">
-            <div className="text-4xl mb-3">📓</div>
+          <div className="text-center py-12">
+            <div className="text-3xl mb-2">📓</div>
             <p className="text-slate-400 text-sm">まだメモがありません。<br />下のフォームから追加してください。</p>
           </div>
         )}
@@ -250,7 +250,7 @@ export default function MemoPage() {
         ))}
 
         {/* 入力フォーム */}
-        <div className="bg-white rounded-2xl border border-sky-100 shadow-sm p-4 mt-6">
+        <div className="bg-white rounded-xl border border-sky-100 shadow-sm p-3 mt-4">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -258,19 +258,19 @@ export default function MemoPage() {
               if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') handleAdd()
             }}
             placeholder="出来事を記録する..."
-            rows={3}
+            rows={2}
             className="w-full text-sm text-slate-700 leading-relaxed resize-none focus:outline-none placeholder:text-slate-300"
           />
 
           {characters.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-sky-50">
+            <div className="flex flex-wrap gap-1 mt-2 pt-2 border-t border-sky-50">
               <span className="text-xs text-slate-400 self-center mr-1">人物タグ</span>
               {characters.map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => toggleChar(c.id)}
-                  className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                  className={`text-xs px-2 py-0.5 rounded-full border transition-colors ${
                     selectedCharIds.includes(c.id)
                       ? 'bg-sky-500 text-white border-sky-500'
                       : 'bg-white text-slate-500 border-slate-200 hover:border-sky-300'
@@ -282,12 +282,12 @@ export default function MemoPage() {
             </div>
           )}
 
-          <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center justify-between mt-2">
             <span className="text-xs text-slate-300">Ctrl+Enter で追加</span>
             <button
               onClick={handleAdd}
               disabled={!content.trim()}
-              className="px-4 py-2 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full disabled:opacity-40 transition-colors shadow-sm"
+              className="px-3 py-1.5 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full disabled:opacity-40 transition-colors shadow-sm"
             >
               追加
             </button>
