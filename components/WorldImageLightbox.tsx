@@ -74,7 +74,7 @@ export default function WorldImageLightbox({
       onClick={onClose}
     >
       <div
-        className="relative max-w-5xl w-full flex flex-col md:flex-row bg-gray-900 rounded-xl overflow-hidden shadow-2xl max-h-[90vh]"
+        className="relative max-w-5xl w-full flex flex-col md:flex-row bg-slate-900 rounded-2xl overflow-hidden shadow-2xl max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 閉じるボタン */}
@@ -96,7 +96,7 @@ export default function WorldImageLightbox({
               className="max-h-[55vh] md:max-h-[90vh] max-w-full object-contain"
             />
           ) : (
-            <div className="text-gray-400 text-sm p-8">画像を読み込めませんでした</div>
+            <div className="text-white/50 text-sm p-8">画像を読み込めませんでした</div>
           )}
 
           {/* 前後ボタン */}
@@ -128,28 +128,28 @@ export default function WorldImageLightbox({
             <h2 className="text-lg font-semibold">{current.title}</h2>
           )}
           {current.caption && (
-            <p className="text-sm text-gray-300 leading-relaxed">{current.caption}</p>
+            <p className="text-sm text-white/70 leading-relaxed">{current.caption}</p>
           )}
           {current.category && (
-            <span className="inline-block self-start text-xs bg-indigo-700 text-indigo-200 px-2 py-0.5 rounded-full">
+            <span className="inline-block self-start text-xs bg-sky-500/30 text-sky-200 px-2 py-0.5 rounded-full border border-sky-400/30">
               {current.category}
             </span>
           )}
 
           {/* 操作ボタン */}
-          <div className="mt-auto flex flex-col gap-2 pt-3 border-t border-gray-700">
+          <div className="mt-auto flex flex-col gap-2 pt-3 border-t border-white/10">
             <div className="flex gap-2">
               <Link
                 href={`/world/edit?id=${current.id}`}
                 onClick={onClose}
-                className="flex-1 text-center text-sm py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                className="flex-1 text-center text-sm py-2 rounded-full bg-sky-500 text-white hover:bg-sky-400 transition-colors"
               >
                 編集
               </Link>
               <button
                 type="button"
                 onClick={() => onDelete(current)}
-                className="flex-1 text-sm py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+                className="flex-1 text-sm py-2 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-colors"
               >
                 削除
               </button>
@@ -159,7 +159,7 @@ export default function WorldImageLightbox({
                 type="button"
                 onClick={() => onMoveUp(current.id)}
                 disabled={currentIndex === 0}
-                className="flex-1 text-sm py-1.5 rounded-lg bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 text-sm py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="上へ移動"
               >
                 ↑ 上へ
@@ -168,7 +168,7 @@ export default function WorldImageLightbox({
                 type="button"
                 onClick={() => onMoveDown(current.id)}
                 disabled={currentIndex === images.length - 1}
-                className="flex-1 text-sm py-1.5 rounded-lg bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 text-sm py-1.5 rounded-full bg-white/10 text-white/70 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 aria-label="下へ移動"
               >
                 ↓ 下へ
