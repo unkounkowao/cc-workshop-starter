@@ -212,7 +212,7 @@ export default function MemoPage() {
         <div className="max-w-3xl mx-auto flex items-end justify-between gap-4 flex-wrap">
           <div>
             <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
-            <h1 className="text-3xl font-bold tracking-tight">出来事メモ</h1>
+            <h1 className="text-3xl font-bold tracking-tight">メモ</h1>
           </div>
           <button
             onClick={handleManualSync}

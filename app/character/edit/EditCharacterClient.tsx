@@ -45,7 +45,7 @@ export default function EditCharacterClient() {
       <div className="min-h-screen bg-sky-50 flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-gray-500 dark:text-gray-400 mb-4">
-            キャラクターが見つかりません
+            登場人物が見つかりません
           </p>
           <Link href="/" className="text-sky-700 underline underline-offset-2 hover:text-sky-900">
             一覧に戻る

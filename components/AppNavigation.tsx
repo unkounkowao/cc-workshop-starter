@@ -32,13 +32,13 @@ export default function AppNavigation() {
         <span className="text-sm font-bold text-sky-600 tracking-wide">Novel Sheet</span>
         <div className="flex gap-1">
           <Link href="/" className={linkClass(isCharacters)}>
-            キャラクター
+            登場人物
           </Link>
           <Link href="/world" className={linkClass(isWorld)}>
             世界観
           </Link>
           <Link href="/memo" className={linkClass(isMemo)}>
-            出来事メモ
+            メモ
           </Link>
         </div>
       </div>

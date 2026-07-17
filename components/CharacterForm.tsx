@@ -235,7 +235,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
       {/* 操作ボタン（上部） */}
       <div className="sticky top-0 z-10 flex items-center justify-between gap-3 mb-8 pb-4 border-b border-sky-100 bg-sky-50">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          {initialCharacter ? 'キャラクターを編集' : '新規キャラクター'}
+          {initialCharacter ? '登場人物を編集' : '新規登場人物'}
         </h1>
         <div className="flex gap-2">
           <button
@@ -331,7 +331,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
       {/* キャラクター設定 */}
       <fieldset className="mb-8">
         <legend className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-          キャラクター設定
+          登場人物設定
         </legend>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {LONG_TEXT_FIELDS.map((field) => (

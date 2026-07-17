@@ -76,7 +76,7 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto flex items-end justify-between gap-4 flex-wrap">
           <div>
             <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
-            <h1 className="text-3xl font-bold tracking-tight">キャラクター</h1>
+            <h1 className="text-3xl font-bold tracking-tight">登場人物</h1>
           </div>
           <div className="flex items-center gap-2">
             <GistSync data={allData} onSynced={() => setCharacters(loadCharacters())} onToast={addToast} />
@@ -96,13 +96,13 @@ export default function HomePage() {
           <div className="text-center py-20">
             <div className="text-5xl mb-4">✏️</div>
             <p className="text-slate-400 mb-6 text-sm">
-              まだキャラクターが登録されていません。
+              まだ登場人物が登録されていません。
             </p>
             <Link
               href="/characters/new"
               className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-full transition-colors shadow-sm"
             >
-              最初のキャラクターを追加
+              最初の登場人物を追加
             </Link>
           </div>
         ) : (
@@ -124,7 +124,7 @@ export default function HomePage() {
       <Toast toasts={toasts} onRemove={removeToast} />
       <ConfirmDialog
         isOpen={!!deleteTarget}
-        title="キャラクターを削除"
+        title="登場人物を削除"
         message={`「${deleteTarget?.name}」を削除します。この操作は取り消せません。`}
         confirmLabel="削除する"
         onConfirm={handleDeleteConfirm}

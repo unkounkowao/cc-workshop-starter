@@ -64,7 +64,7 @@ export default function CharacterDetail({ character }: Props) {
       {(LONG_TEXT_FIELDS.some((field) => !isEmpty(character[field])) || !isEmpty(character.imageSong)) && (
         <section>
           <h2 className="text-xs font-semibold text-sky-700 uppercase tracking-widest mb-4">
-            キャラクター設定
+            登場人物設定
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {LONG_TEXT_FIELDS.map((field) => {

@@ -42,7 +42,7 @@ export default function CharacterDetailClient() {
       <div className="min-h-screen bg-sky-50 flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-slate-400 mb-4">
-            キャラクターが見つかりません
+            登場人物が見つかりません
           </p>
           <Link href="/" className="text-sky-700 underline underline-offset-2 hover:text-sky-900">
             一覧に戻る
@@ -70,20 +70,7 @@ export default function CharacterDetailClient() {
               <p className="text-sm text-slate-400">{character.nameReading}</p>
             )}
           </div>
-          <div className="flex gap-2 items-center">
-            <Link
-              href={`/character/edit?id=${character.id}`}
-              className="px-4 py-2 text-sm text-sky-700 border border-sky-300 rounded-full hover:bg-sky-50 transition-colors min-h-[40px] flex items-center"
-            >
-              編集
-            </Link>
-            <button
-              onClick={() => setShowDeleteDialog(true)}
-              className="px-4 py-2 text-sm text-red-500 border border-red-200 rounded-full hover:bg-red-50 transition-colors min-h-[40px]"
-            >
-              削除
-            </button>
-          </div>
+          <div />
         </div>
       </header>
 
@@ -91,34 +78,46 @@ export default function CharacterDetailClient() {
         <CharacterDetail character={character} />
       </main>
 
-      {(prevChar || nextChar) && (
-        <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/90 backdrop-blur border-t border-sky-100">
-          <div className="max-w-4xl mx-auto px-4 py-2 flex justify-between gap-2">
-            {prevChar ? (
-              <Link
-                href={`/character?id=${prevChar.id}`}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[45%]"
-              >
-                <span className="shrink-0 text-base">‹</span>
-                <span className="truncate">{prevChar.name}</span>
-              </Link>
-            ) : <div />}
-            {nextChar ? (
-              <Link
-                href={`/character?id=${nextChar.id}`}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[45%] ml-auto"
-              >
-                <span className="truncate">{nextChar.name}</span>
-                <span className="shrink-0 text-base">›</span>
-              </Link>
-            ) : <div />}
+      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/90 backdrop-blur border-t border-sky-100">
+        <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between gap-2">
+          {prevChar ? (
+            <Link
+              href={`/character?id=${prevChar.id}`}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[30%]"
+            >
+              <span className="shrink-0 text-base">‹</span>
+              <span className="truncate">{prevChar.name}</span>
+            </Link>
+          ) : <div />}
+          <div className="flex gap-2 shrink-0">
+            <Link
+              href={`/character/edit?id=${character.id}`}
+              className="px-4 py-1.5 text-sm text-sky-700 border border-sky-300 rounded-full hover:bg-sky-50 transition-colors"
+            >
+              編集
+            </Link>
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="px-4 py-1.5 text-sm text-red-500 border border-red-200 rounded-full hover:bg-red-50 transition-colors"
+            >
+              削除
+            </button>
           </div>
+          {nextChar ? (
+            <Link
+              href={`/character?id=${nextChar.id}`}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[30%]"
+            >
+              <span className="truncate">{nextChar.name}</span>
+              <span className="shrink-0 text-base">›</span>
+            </Link>
+          ) : <div />}
         </div>
-      )}
+      </div>
 
       <ConfirmDialog
         isOpen={showDeleteDialog}
-        title="キャラクターを削除"
+        title="登場人物を削除"
         message={`「${character.name}」を削除します。この操作は取り消せません。`}
         confirmLabel="削除する"
         onConfirm={handleDelete}
