@@ -67,7 +67,7 @@ export default function WorldImageLightbox({
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-label={current.title ?? current.fileName}
@@ -149,7 +149,7 @@ export default function WorldImageLightbox({
               <button
                 type="button"
                 onClick={() => onDelete(current)}
-                className="flex-1 text-sm py-2 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-colors"
+                className="flex-1 text-sm py-2 rounded-full bg-white/10 text-white/70 hover:bg-white/20 transition-colors"
               >
                 削除
               </button>
