@@ -55,22 +55,21 @@ export default function CharacterDetailClient() {
   return (
     <div className="min-h-screen bg-sky-50">
       <header className="bg-white border-b border-sky-100 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+        <div className="max-w-4xl mx-auto px-4 py-3 relative flex items-center justify-between">
           <Link
             href="/"
-            className="text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1"
+            className="text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors flex items-center gap-1 shrink-0 z-10"
           >
             ← 一覧へ
           </Link>
-          <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-lg font-bold text-slate-800">
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <h1 className="text-lg font-bold text-slate-800 truncate max-w-[55%]">
               {character.name}
             </h1>
             {character.nameReading && (
-              <p className="text-sm text-slate-400">{character.nameReading}</p>
+              <p className="text-xs text-slate-400">{character.nameReading}</p>
             )}
           </div>
-          <div />
         </div>
       </header>
 
