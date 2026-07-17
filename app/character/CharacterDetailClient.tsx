@@ -78,26 +78,26 @@ export default function CharacterDetailClient() {
       </main>
 
       <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/90 backdrop-blur border-t border-sky-100">
-        <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between gap-2">
+        <div className="max-w-4xl mx-auto px-4 py-2 relative flex items-center justify-between">
           {prevChar ? (
             <Link
               href={`/character?id=${prevChar.id}`}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[30%]"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[30%] shrink-0 z-10"
             >
               <span className="shrink-0 text-base">‹</span>
               <span className="truncate">{prevChar.name}</span>
             </Link>
           ) : <div />}
-          <div className="flex gap-2 shrink-0">
+          <div className="absolute inset-0 flex items-center justify-center gap-2 pointer-events-none">
             <Link
               href={`/character/edit?id=${character.id}`}
-              className="px-4 py-1.5 text-sm text-sky-700 border border-sky-300 rounded-full hover:bg-sky-50 transition-colors"
+              className="px-4 py-1.5 text-sm text-sky-700 border border-sky-300 rounded-full hover:bg-sky-50 transition-colors pointer-events-auto"
             >
               編集
             </Link>
             <button
               onClick={() => setShowDeleteDialog(true)}
-              className="px-4 py-1.5 text-sm text-red-500 border border-red-200 rounded-full hover:bg-red-50 transition-colors"
+              className="px-4 py-1.5 text-sm text-red-500 border border-red-200 rounded-full hover:bg-red-50 transition-colors pointer-events-auto"
             >
               削除
             </button>
@@ -105,7 +105,7 @@ export default function CharacterDetailClient() {
           {nextChar ? (
             <Link
               href={`/character?id=${nextChar.id}`}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[30%]"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[30%] shrink-0 z-10"
             >
               <span className="truncate">{nextChar.name}</span>
               <span className="shrink-0 text-base">›</span>
