@@ -87,32 +87,34 @@ export default function CharacterDetailClient() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-4xl mx-auto px-4 py-8 pb-20">
         <CharacterDetail character={character} />
+      </main>
 
-        {(prevChar || nextChar) && (
-          <div className="flex justify-between gap-3 mt-10 pt-6 border-t border-sky-100">
+      {(prevChar || nextChar) && (
+        <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/90 backdrop-blur border-t border-sky-100">
+          <div className="max-w-4xl mx-auto px-4 py-2 flex justify-between gap-2">
             {prevChar ? (
               <Link
                 href={`/character?id=${prevChar.id}`}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-sky-100 rounded-full text-sm text-slate-600 hover:border-sky-300 hover:bg-sky-50 transition-colors max-w-[45%]"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[45%]"
               >
-                <span className="shrink-0">‹</span>
+                <span className="shrink-0 text-base">‹</span>
                 <span className="truncate">{prevChar.name}</span>
               </Link>
             ) : <div />}
             {nextChar ? (
               <Link
                 href={`/character?id=${nextChar.id}`}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-sky-100 rounded-full text-sm text-slate-600 hover:border-sky-300 hover:bg-sky-50 transition-colors max-w-[45%] ml-auto"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-sky-600 transition-colors max-w-[45%] ml-auto"
               >
                 <span className="truncate">{nextChar.name}</span>
-                <span className="shrink-0">›</span>
+                <span className="shrink-0 text-base">›</span>
               </Link>
             ) : <div />}
           </div>
-        )}
-      </main>
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={showDeleteDialog}
