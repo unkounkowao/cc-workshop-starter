@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { loadCharacter, deleteCharacter } from '@/lib/storage'
+import { loadCharacter, loadCharacters, deleteCharacter } from '@/lib/storage'
 import type { Character } from '@/lib/types'
 import CharacterDetail from '@/components/CharacterDetail'
 import ConfirmDialog from '@/components/ConfirmDialog'
@@ -12,15 +12,22 @@ export default function CharacterDetailClient() {
   const searchParams = useSearchParams()
   const id = searchParams.get('id')
   const [character, setCharacter] = useState<Character | null | undefined>(undefined)
+  const [allCharacters, setAllCharacters] = useState<Character[]>([])
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   useEffect(() => {
+    const all = loadCharacters()
+    setAllCharacters(all)
     if (!id) {
       setCharacter(null)
       return
     }
     setCharacter(loadCharacter(id))
   }, [id])
+
+  const currentIdx = allCharacters.findIndex((c) => c.id === id)
+  const prevChar = currentIdx > 0 ? allCharacters[currentIdx - 1] : null
+  const nextChar = currentIdx >= 0 && currentIdx < allCharacters.length - 1 ? allCharacters[currentIdx + 1] : null
 
   const handleDelete = () => {
     if (!character) return
@@ -63,7 +70,25 @@ export default function CharacterDetailClient() {
               <p className="text-sm text-slate-400">{character.nameReading}</p>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {prevChar && (
+              <Link
+                href={`/character?id=${prevChar.id}`}
+                className="px-3 py-2 text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors min-h-[40px] flex items-center"
+                aria-label="前のキャラクター"
+              >
+                ‹
+              </Link>
+            )}
+            {nextChar && (
+              <Link
+                href={`/character?id=${nextChar.id}`}
+                className="px-3 py-2 text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors min-h-[40px] flex items-center"
+                aria-label="次のキャラクター"
+              >
+                ›
+              </Link>
+            )}
             <Link
               href={`/character/edit?id=${character.id}`}
               className="px-4 py-2 text-sm text-sky-700 border border-sky-300 rounded-full hover:bg-sky-50 transition-colors min-h-[40px] flex items-center"
