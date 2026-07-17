@@ -71,24 +71,6 @@ export default function CharacterDetailClient() {
             )}
           </div>
           <div className="flex gap-2 items-center">
-            {prevChar && (
-              <Link
-                href={`/character?id=${prevChar.id}`}
-                className="px-3 py-2 text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors min-h-[40px] flex items-center"
-                aria-label="前のキャラクター"
-              >
-                ‹
-              </Link>
-            )}
-            {nextChar && (
-              <Link
-                href={`/character?id=${nextChar.id}`}
-                className="px-3 py-2 text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors min-h-[40px] flex items-center"
-                aria-label="次のキャラクター"
-              >
-                ›
-              </Link>
-            )}
             <Link
               href={`/character/edit?id=${character.id}`}
               className="px-4 py-2 text-sm text-sky-700 border border-sky-300 rounded-full hover:bg-sky-50 transition-colors min-h-[40px] flex items-center"
@@ -107,6 +89,29 @@ export default function CharacterDetailClient() {
 
       <main className="max-w-4xl mx-auto px-4 py-8">
         <CharacterDetail character={character} />
+
+        {(prevChar || nextChar) && (
+          <div className="flex justify-between gap-3 mt-10 pt-6 border-t border-sky-100">
+            {prevChar ? (
+              <Link
+                href={`/character?id=${prevChar.id}`}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-sky-100 rounded-full text-sm text-slate-600 hover:border-sky-300 hover:bg-sky-50 transition-colors max-w-[45%]"
+              >
+                <span className="shrink-0">‹</span>
+                <span className="truncate">{prevChar.name}</span>
+              </Link>
+            ) : <div />}
+            {nextChar ? (
+              <Link
+                href={`/character?id=${nextChar.id}`}
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-sky-100 rounded-full text-sm text-slate-600 hover:border-sky-300 hover:bg-sky-50 transition-colors max-w-[45%] ml-auto"
+              >
+                <span className="truncate">{nextChar.name}</span>
+                <span className="shrink-0">›</span>
+              </Link>
+            ) : <div />}
+          </div>
+        )}
       </main>
 
       <ConfirmDialog
