@@ -77,18 +77,8 @@ export default function WorldImageLightbox({
         className="relative max-w-5xl w-full flex flex-col md:flex-row bg-white rounded-2xl overflow-hidden shadow-2xl max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 閉じるボタン */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-3 right-3 z-10 text-slate-500 hover:text-slate-700 bg-white/80 hover:bg-white rounded-full w-8 h-8 flex items-center justify-center text-xl leading-none shadow-sm"
-          aria-label="閉じる"
-        >
-          ×
-        </button>
-
         {/* 画像エリア */}
-        <div className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
+        <div className="flex-1 flex items-center justify-center bg-black relative">
           {objectURL ? (
             <img
               src={objectURL}
