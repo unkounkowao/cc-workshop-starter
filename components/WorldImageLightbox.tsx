@@ -74,7 +74,7 @@ export default function WorldImageLightbox({
       onClick={onClose}
     >
       <div
-        className="relative max-w-5xl w-full flex flex-col md:flex-row bg-white rounded-2xl overflow-hidden shadow-2xl max-h-[90vh]"
+        className="relative max-w-5xl w-full flex flex-col md:flex-row bg-white shadow-2xl max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 画像エリア */}
