@@ -14,6 +14,13 @@ export const metadata: Metadata = {
   description: '小説執筆用キャラクター設定管理アプリ',
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export default function RootLayout({
   children,
 }: {
