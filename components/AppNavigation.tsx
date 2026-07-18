@@ -27,7 +27,7 @@ export default function AppNavigation() {
     }`
 
   return (
-    <nav className="bg-white border-b border-sky-100">
+    <nav className="bg-white border-b border-sky-100 sticky top-0 z-20">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <span className="text-sm font-bold text-sky-600 tracking-wide">Novel Sheet</span>
         <div className="flex gap-1">
