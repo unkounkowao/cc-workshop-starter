@@ -41,9 +41,7 @@ export default function CharacterDetailClient() {
     return (
       <div className="min-h-screen bg-sky-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-slate-400 mb-4">
-            登場人物が見つかりません
-          </p>
+          <p className="text-slate-400 mb-4">登場人物が見つかりません</p>
           <Link href="/" className="text-sky-700 underline underline-offset-2 hover:text-sky-900">
             一覧に戻る
           </Link>
@@ -53,8 +51,9 @@ export default function CharacterDetailClient() {
   }
 
   return (
-    <div className="min-h-screen bg-sky-50">
-      <header className="bg-white border-b border-sky-100 sticky top-0 z-10">
+    <div className="flex flex-col bg-sky-50" style={{ height: 'calc(100dvh - 57px)' }}>
+      {/* ヘッダー */}
+      <header className="bg-white border-b border-sky-100 shrink-0">
         <div className="max-w-4xl mx-auto px-4 py-3 relative flex items-center justify-between">
           <Link
             href="/"
@@ -73,11 +72,15 @@ export default function CharacterDetailClient() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 pb-20">
-        <CharacterDetail character={character} />
+      {/* スクロール可能なコンテンツ */}
+      <main className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <CharacterDetail character={character} />
+        </div>
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-sky-100">
+      {/* 常に表示されるフッター */}
+      <div className="bg-white border-t border-sky-100 shrink-0">
         <div className="max-w-4xl mx-auto px-4 py-2 flex items-center gap-2">
           <div className="w-[30%]">
             {prevChar && (
