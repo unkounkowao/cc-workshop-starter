@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="ja" className={notoSansJP.className}>
+    <html lang="ja" translate="no" className={notoSansJP.className}>
       <body className="antialiased bg-sky-50 min-h-screen">
         <AppNavigation />
         {children}

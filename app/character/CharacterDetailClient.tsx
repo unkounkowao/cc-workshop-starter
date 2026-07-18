@@ -77,7 +77,7 @@ export default function CharacterDetailClient() {
         <CharacterDetail character={character} />
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/90 backdrop-blur border-t border-sky-100">
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-sky-100">
         <div className="max-w-4xl mx-auto px-4 py-2 flex items-center gap-2">
           <div className="w-[30%]">
             {prevChar && (
