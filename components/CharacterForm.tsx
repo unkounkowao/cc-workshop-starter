@@ -233,7 +233,7 @@ export default function CharacterForm({ initialCharacter, onSave, onQuickSave, o
   return (
     <form onSubmit={handleSubmit} noValidate>
       {/* 操作ボタン（上部） */}
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-3 mb-8 pb-4 border-b border-sky-100 bg-sky-50">
+      <div className="sticky top-[49px] z-10 flex items-center justify-between gap-3 mb-8 pb-4 border-b border-sky-100 bg-sky-50">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
           {initialCharacter ? '登場人物を編集' : '新規登場人物'}
         </h1>
