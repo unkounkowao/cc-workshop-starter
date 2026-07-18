@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { loadCharacter, loadCharacters, deleteCharacter } from '@/lib/storage'
@@ -14,6 +14,14 @@ export default function CharacterDetailClient() {
   const [character, setCharacter] = useState<Character | null | undefined>(undefined)
   const [allCharacters, setAllCharacters] = useState<Character[]>([])
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [pageHeight, setPageHeight] = useState('calc(100dvh - 57px)')
+
+  useLayoutEffect(() => {
+    const nav = document.querySelector('nav')
+    if (nav) {
+      setPageHeight(`calc(100dvh - ${nav.getBoundingClientRect().height}px)`)
+    }
+  }, [])
 
   useEffect(() => {
     const all = loadCharacters()
@@ -51,7 +59,7 @@ export default function CharacterDetailClient() {
   }
 
   return (
-    <div className="flex flex-col bg-sky-50" style={{ height: 'calc(100dvh - 57px)' }}>
+    <div className="flex flex-col bg-sky-50" style={{ height: pageHeight }}>
       {/* ヘッダー */}
       <header className="bg-white border-b border-sky-100 shrink-0">
         <div className="max-w-4xl mx-auto px-4 py-3 relative flex items-center justify-between">
