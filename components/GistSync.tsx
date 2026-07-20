@@ -74,6 +74,7 @@ export default function GistSync() {
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<{ msg: string; ok: boolean } | null>(null)
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const savingRef = useRef(false)
 
   const getCredentials = () => ({
     savedToken: localStorage.getItem(TOKEN_KEY) ?? '',
@@ -86,15 +87,19 @@ export default function GistSync() {
     statusTimerRef.current = setTimeout(() => setStatus(null), 3000)
   }
 
-  // 保存（直列実行で競合防止）
+  // 保存（直列実行・排他制御で競合防止）
   const autoSave = async () => {
+    if (savingRef.current) return
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
+    savingRef.current = true
     try {
       await saveToGist(savedToken, savedGistId, loadData())
       await saveScheduleToGist(savedToken, savedGistId, loadScheduleData())
       await saveMemoToGist(savedToken, savedGistId, loadMemoData())
-    } catch { /* ignore */ }
+    } catch { /* ignore */ } finally {
+      savingRef.current = false
+    }
   }
 
   // 読み込み（各データを独立して並列取得、マージはそれぞれ）
@@ -191,6 +196,8 @@ export default function GistSync() {
 
   const handleSave = async () => {
     if (!token.trim()) { showStatus('Personal Access Tokenを入力してください', false); return }
+    if (savingRef.current) { showStatus('同期中です。しばらく待ってから再試行してください', false); return }
+    savingRef.current = true
     setLoading(true)
     try {
       const newId = await saveToGist(token.trim(), gistId.trim() || null, loadData())
@@ -204,6 +211,7 @@ export default function GistSync() {
     } catch (e) {
       showStatus(e instanceof Error ? e.message : 'Gist保存に失敗しました', false)
     } finally {
+      savingRef.current = false
       setLoading(false)
     }
   }
