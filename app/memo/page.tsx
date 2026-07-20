@@ -252,7 +252,7 @@ export default function MemoPage() {
             tab === 'archive' ? 'bg-sky-500 text-white shadow-sm' : 'text-slate-500 hover:text-sky-600 hover:bg-sky-50'
           }`}
         >
-          アーカイブ {archiveMemos.length > 0 && <span className="ml-1 text-xs opacity-70">{archiveMemos.length}</span>}
+          アーカイブ
         </button>
       </div>
 
