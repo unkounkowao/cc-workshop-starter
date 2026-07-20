@@ -68,7 +68,6 @@ describe('ScheduleEntryCard - officialタイプ', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     expect(screen.getByText('公式イベント')).toBeInTheDocument()
@@ -83,7 +82,6 @@ describe('ScheduleEntryCard - officialタイプ', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     expect(screen.getByText('公式スケジュール')).toBeInTheDocument()
@@ -98,7 +96,6 @@ describe('ScheduleEntryCard - officialタイプ', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     const link = screen.getByRole('link')
@@ -116,7 +113,6 @@ describe('ScheduleEntryCard - plotタイプ', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     expect(screen.getByText('プロットイベント')).toBeInTheDocument()
@@ -131,7 +127,6 @@ describe('ScheduleEntryCard - plotタイプ', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     expect(screen.getByText('プロット・出来事')).toBeInTheDocument()
@@ -146,7 +141,6 @@ describe('ScheduleEntryCard - plotタイプ', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     const link = screen.getByRole('link')
@@ -165,7 +159,6 @@ describe('ScheduleEntryCard - 空フィールドの非表示', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     // summary用のpタグが表示されないことを確認（summaryフィールドはp.line-clamp-2.leading-relaxedで表示される）
@@ -182,7 +175,6 @@ describe('ScheduleEntryCard - 空フィールドの非表示', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     // カテゴリ表示がないことを確認（アイコンが表示されていない）
@@ -199,7 +191,6 @@ describe('ScheduleEntryCard - 空フィールドの非表示', () => {
         total={2}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     expect(screen.queryByRole('group', { name: '関連キャラクター' })).toBeNull()
@@ -217,7 +208,6 @@ describe('ScheduleEntryCard - 上へ/下へボタン', () => {
         total={3}
         onMoveUp={onMoveUp}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     fireEvent.click(screen.getByRole('button', { name: /上に移動/ }))
@@ -234,7 +224,6 @@ describe('ScheduleEntryCard - 上へ/下へボタン', () => {
         total={3}
         onMoveUp={vi.fn()}
         onMoveDown={onMoveDown}
-        onDelete={vi.fn()}
       />
     )
     fireEvent.click(screen.getByRole('button', { name: /下に移動/ }))
@@ -250,7 +239,6 @@ describe('ScheduleEntryCard - 上へ/下へボタン', () => {
         total={3}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     expect(screen.getByRole('button', { name: /上に移動/ })).toBeDisabled()
@@ -265,29 +253,9 @@ describe('ScheduleEntryCard - 上へ/下へボタン', () => {
         total={3}
         onMoveUp={vi.fn()}
         onMoveDown={vi.fn()}
-        onDelete={vi.fn()}
       />
     )
     expect(screen.getByRole('button', { name: /下に移動/ })).toBeDisabled()
   })
 })
 
-describe('ScheduleEntryCard - 削除ボタン', () => {
-  it('削除ボタンをクリックするとonDeleteが呼ばれる', () => {
-    const onDelete = vi.fn()
-    const entry = makeOfficialEntry()
-    render(
-      <ScheduleEntryCard
-        entry={entry}
-        characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
-        onDelete={onDelete}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /削除/ }))
-    expect(onDelete).toHaveBeenCalledWith(entry)
-  })
-})

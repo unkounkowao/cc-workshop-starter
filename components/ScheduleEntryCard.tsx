@@ -11,7 +11,6 @@ type Props = {
   total: number
   onMoveUp: (id: string) => void
   onMoveDown: (id: string) => void
-  onDelete: (entry: ScheduleEntry) => void
 }
 
 function ImportanceDot({ importance }: { importance: ScheduleEntryImportance }) {
@@ -51,7 +50,6 @@ export default function ScheduleEntryCard({
   total,
   onMoveUp,
   onMoveDown,
-  onDelete,
 }: Props) {
   const isOfficial = entry.type === 'official'
   const detailHref = isOfficial
@@ -102,15 +100,15 @@ export default function ScheduleEntryCard({
           )}
         </div>
 
+        {/* 日付・時間 */}
+        {dateString && (
+          <p className="text-xs text-slate-500 mb-1">{dateString}</p>
+        )}
+
         {/* タイトル */}
         <h3 className="font-bold text-slate-800 group-hover:text-sky-600 transition-colors text-sm leading-snug mb-1 line-clamp-2">
           {entry.title}
         </h3>
-
-        {/* 日付・時間 */}
-        {dateString && (
-          <p className="text-xs text-slate-500 mb-2">{dateString}</p>
-        )}
 
         {/* 概要 */}
         {entry.summary && (
@@ -180,19 +178,10 @@ export default function ScheduleEntryCard({
           type="button"
           onClick={(e) => { e.stopPropagation(); onMoveDown(entry.id) }}
           disabled={index === total - 1}
-          className="flex-1 py-2 text-xs text-slate-400 hover:text-sky-600 hover:bg-sky-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400"
+          className="flex-1 py-2 text-xs text-slate-400 hover:text-sky-600 hover:bg-sky-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-400 rounded-br-xl"
           aria-label={`${entry.title} を下に移動`}
         >
           ↓ 下へ
-        </button>
-        <div className="w-px bg-slate-100" />
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); onDelete(entry) }}
-          className="px-4 py-2 text-xs text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-400 rounded-br-xl"
-          aria-label={`${entry.title} を削除`}
-        >
-          削除
         </button>
       </div>
     </div>

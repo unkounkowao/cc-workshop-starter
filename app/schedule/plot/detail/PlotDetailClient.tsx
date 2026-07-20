@@ -169,8 +169,7 @@ export default function PlotDetailClient() {
 
           {(monthObj || dateStr) && (
             <p className="text-sm text-slate-500">
-              {year && <span className="font-medium text-slate-700">{year.name}</span>}
-              {monthObj && <span className="ml-2 text-slate-600">{monthObj.name}</span>}
+              {monthObj && <span className="text-slate-600">{monthObj.name}</span>}
               {dateStr && <span className="ml-2">{dateStr}</span>}
             </p>
           )}

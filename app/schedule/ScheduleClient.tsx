@@ -20,7 +20,6 @@ import { exportScheduleBackup, importScheduleBackup } from '@/lib/scheduleBackup
 import { loadCharacters } from '@/lib/storage'
 import {
   SCHEDULE_SELECTED_YEAR_KEY,
-  SCHEDULE_VIEW_MODE_KEY,
   DEFAULT_MONTH_NAMES,
 } from '@/lib/constants'
 import { generateId, now } from '@/lib/utils'
@@ -294,8 +293,6 @@ function BackupPanel({
 
 // ===== メインコンポーネント =====
 
-type ViewMode = 'timeline' | 'grid'
-
 function addToast(
   setToasts: React.Dispatch<React.SetStateAction<ToastType[]>>,
   message: string,
@@ -309,13 +306,11 @@ export default function ScheduleClient() {
   const [mounted, setMounted] = useState(false)
   const [years, setYears] = useState<StoryYear[]>([])
   const [selectedYearId, setSelectedYearId] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('timeline')
   const [entries, setEntries] = useState<ScheduleEntry[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [showYearModal, setShowYearModal] = useState(false)
   const [editingYear, setEditingYear] = useState<StoryYear | null>(null)
   const [deleteYearTarget, setDeleteYearTarget] = useState<StoryYear | null>(null)
-  const [deleteEntryTarget, setDeleteEntryTarget] = useState<ScheduleEntry | null>(null)
   const [toasts, setToasts] = useState<ToastType[]>([])
 
   const showSuccess = useCallback((msg: string) => addToast(setToasts, msg, 'success'), [])
@@ -329,12 +324,6 @@ export default function ScheduleClient() {
     setCharacters(loadCharacters())
 
     const storedYearId = localStorage.getItem(SCHEDULE_SELECTED_YEAR_KEY)
-    const storedViewMode = localStorage.getItem(SCHEDULE_VIEW_MODE_KEY) as ViewMode | null
-
-    if (storedViewMode === 'grid' || storedViewMode === 'timeline') {
-      setViewMode(storedViewMode)
-    }
-
     if (storedYearId && loadedYears.some((y) => y.id === storedYearId)) {
       setSelectedYearId(storedYearId)
     } else if (loadedYears.length > 0) {
@@ -352,12 +341,6 @@ export default function ScheduleClient() {
       setEntries([])
     }
   }, [selectedYearId, mounted])
-
-  // viewMode 変更時に保存
-  useEffect(() => {
-    if (!mounted) return
-    localStorage.setItem(SCHEDULE_VIEW_MODE_KEY, viewMode)
-  }, [viewMode, mounted])
 
   const selectedYear = useMemo(
     () => years.find((y) => y.id === selectedYearId) ?? null,
@@ -462,15 +445,6 @@ export default function ScheduleClient() {
     setEntries(loadEntries(entry.yearId))
   }, [entries])
 
-  // エントリ削除実行
-  const handleEntryDeleteConfirm = () => {
-    if (!deleteEntryTarget) return
-    deleteEntry(deleteEntryTarget.id)
-    if (selectedYearId) setEntries(loadEntries(selectedYearId))
-    setDeleteEntryTarget(null)
-    showSuccess('エントリを削除しました')
-  }
-
   if (!mounted) return null
 
   // ===== 空状態（年なし） =====
@@ -572,52 +546,6 @@ export default function ScheduleClient() {
 
           {/* 下段 */}
           <div className="flex items-center gap-2 flex-wrap">
-            {/* 表示切り替え */}
-            <div className="flex border border-slate-300 rounded-lg overflow-hidden" role="group" aria-label="表示モード">
-              <button
-                type="button"
-                onClick={() => setViewMode('timeline')}
-                className={`px-3 py-1.5 text-xs transition-colors ${
-                  viewMode === 'timeline'
-                    ? 'bg-sky-500 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50'
-                }`}
-                aria-pressed={viewMode === 'timeline'}
-              >
-                タイムライン
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`px-3 py-1.5 text-xs transition-colors ${
-                  viewMode === 'grid'
-                    ? 'bg-sky-500 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-50'
-                }`}
-                aria-pressed={viewMode === 'grid'}
-              >
-                グリッド
-              </button>
-            </div>
-
-            {/* 追加ボタン */}
-            {selectedYear && (
-              <>
-                <Link
-                  href={`/schedule/official/new?yearId=${selectedYear.id}`}
-                  className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors whitespace-nowrap"
-                >
-                  + 公式スケジュール
-                </Link>
-                <Link
-                  href={`/schedule/plot/new?yearId=${selectedYear.id}`}
-                  className="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors whitespace-nowrap"
-                >
-                  + プロット・出来事
-                </Link>
-              </>
-            )}
-
             {/* バックアップ */}
             <div className="ml-auto">
               <BackupPanel
@@ -656,8 +584,7 @@ export default function ScheduleClient() {
               </Link>
             </div>
           </div>
-        ) : viewMode === 'timeline' ? (
-          /* タイムラインビュー */
+        ) : (
           <div className="space-y-6">
             {selectedYear.months.map((month) => {
               const monthEntries = sortEntriesInMonth(entriesByMonth[month.id] ?? [])
@@ -671,11 +598,6 @@ export default function ScheduleClient() {
                       <div className="flex items-center gap-3">
                         <h2 className="text-base font-bold text-slate-700">
                           {month.name}
-                          {monthEntries.length > 0 && (
-                            <span className="ml-2 text-xs font-normal text-slate-400">
-                              {monthEntries.length}件
-                            </span>
-                          )}
                         </h2>
                       </div>
                       <div className="flex items-center gap-2">
@@ -712,78 +634,12 @@ export default function ScheduleClient() {
                             total={monthEntries.length}
                             onMoveUp={handleEntryMoveUp}
                             onMoveDown={handleEntryMoveDown}
-                            onDelete={setDeleteEntryTarget}
                           />
                         ))}
                       </div>
                     )}
                   </details>
                   <hr className="border-slate-200 mt-4" />
-                </section>
-              )
-            })}
-          </div>
-        ) : (
-          /* グリッドビュー */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {selectedYear.months.map((month) => {
-              const monthEntries = sortEntriesInMonth(entriesByMonth[month.id] ?? [])
-              return (
-                <section
-                  key={month.id}
-                  className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
-                  aria-labelledby={`grid-month-${month.id}`}
-                >
-                  <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-100 flex items-center justify-between gap-1">
-                    <h2
-                      id={`grid-month-${month.id}`}
-                      className="text-sm font-bold text-slate-700 truncate"
-                    >
-                      {month.name}
-                    </h2>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Link
-                        href={`/schedule/official/new?yearId=${selectedYear.id}&monthId=${month.id}`}
-                        className="text-xs text-blue-600 hover:text-blue-700 px-1"
-                        aria-label={`${month.name}に公式スケジュールを追加`}
-                      >
-                        +公
-                      </Link>
-                      <Link
-                        href={`/schedule/plot/new?yearId=${selectedYear.id}&monthId=${month.id}`}
-                        className="text-xs text-amber-600 hover:text-amber-700 px-1"
-                        aria-label={`${month.name}にプロットを追加`}
-                      >
-                        +プ
-                      </Link>
-                    </div>
-                  </div>
-                  <div className="p-2 space-y-1.5 min-h-[80px]">
-                    {monthEntries.length === 0 ? (
-                      <p className="text-xs text-slate-300 text-center py-3">なし</p>
-                    ) : (
-                      monthEntries.map((entry) => {
-                        const href = entry.type === 'official'
-                          ? `/schedule/official/detail?id=${entry.id}`
-                          : `/schedule/plot/detail?id=${entry.id}`
-                        const badgeCls = entry.type === 'official'
-                          ? 'border-l-blue-400'
-                          : 'border-l-amber-400'
-                        return (
-                          <Link
-                            key={entry.id}
-                            href={href}
-                            className={`block px-2 py-1.5 bg-slate-50 hover:bg-sky-50 rounded-lg border border-slate-100 border-l-2 ${badgeCls} transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400`}
-                          >
-                            <p className="text-xs font-medium text-slate-700 line-clamp-1">{entry.title}</p>
-                            {entry.startDay !== undefined && (
-                              <p className="text-xs text-slate-400">{entry.startDay}日</p>
-                            )}
-                          </Link>
-                        )
-                      })
-                    )}
-                  </div>
                 </section>
               )
             })}
@@ -811,16 +667,6 @@ export default function ScheduleClient() {
         confirmLabel="削除する"
         onConfirm={handleYearDeleteConfirm}
         onCancel={() => setDeleteYearTarget(null)}
-        isDanger
-      />
-
-      <ConfirmDialog
-        isOpen={deleteEntryTarget !== null}
-        title="エントリを削除しますか？"
-        message={deleteEntryTarget ? `「${deleteEntryTarget.title}」を削除します。この操作は取り消せません。` : ''}
-        confirmLabel="削除する"
-        onConfirm={handleEntryDeleteConfirm}
-        onCancel={() => setDeleteEntryTarget(null)}
         isDanger
       />
 

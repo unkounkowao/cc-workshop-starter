@@ -334,19 +334,6 @@ export default function ScheduleEntryForm({
             日時
           </h3>
           <div className="space-y-4">
-            {/* 日付ラベル */}
-            <div>
-              <FieldLabel htmlFor="field-dateLabel">日付ラベル</FieldLabel>
-              <input
-                id="field-dateLabel"
-                type="text"
-                value={form.dateLabel}
-                onChange={(e) => update('dateLabel', e.target.value)}
-                placeholder="例：満月の夜、春の終わり"
-                className={inputClass}
-              />
-            </div>
-
             {/* 開始日・終了日 (2カラム) */}
             <div className="grid grid-cols-2 gap-4">
               <div>
