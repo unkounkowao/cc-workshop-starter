@@ -54,6 +54,7 @@ export async function loadFromGist(
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
     },
+    cache: 'no-store',
   })
 
   if (!response.ok) {
@@ -122,6 +123,7 @@ export async function loadMemoFromGist(
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
     },
+    cache: 'no-store',
   })
 
   if (!response.ok) return null
@@ -178,6 +180,7 @@ export async function loadScheduleFromGist(
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
     },
+    cache: 'no-store',
   })
   if (!response.ok) return null
 
