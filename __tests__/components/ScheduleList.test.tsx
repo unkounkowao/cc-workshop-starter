@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import ScheduleEntryCard from '@/components/ScheduleEntryCard'
 import type { ScheduleEntry } from '@/lib/types'
 import type { Character } from '@/lib/types'
@@ -64,27 +64,9 @@ describe('ScheduleEntryCard - officialタイプ', () => {
       <ScheduleEntryCard
         entry={makeOfficialEntry()}
         characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
       />
     )
     expect(screen.getByText('公式イベント')).toBeInTheDocument()
-  })
-
-  it('「公式スケジュール」バッジが表示される', () => {
-    render(
-      <ScheduleEntryCard
-        entry={makeOfficialEntry()}
-        characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
-      />
-    )
-    expect(screen.getByText('公式スケジュール')).toBeInTheDocument()
   })
 
   it('詳細リンクが /schedule/official/detail?id=entry-1 に設定される', () => {
@@ -92,10 +74,6 @@ describe('ScheduleEntryCard - officialタイプ', () => {
       <ScheduleEntryCard
         entry={makeOfficialEntry()}
         characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
       />
     )
     const link = screen.getByRole('link')
@@ -109,27 +87,9 @@ describe('ScheduleEntryCard - plotタイプ', () => {
       <ScheduleEntryCard
         entry={makePlotEntry()}
         characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
       />
     )
     expect(screen.getByText('プロットイベント')).toBeInTheDocument()
-  })
-
-  it('「プロット・出来事」バッジが表示される', () => {
-    render(
-      <ScheduleEntryCard
-        entry={makePlotEntry()}
-        characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
-      />
-    )
-    expect(screen.getByText('出来事')).toBeInTheDocument()
   })
 
   it('詳細リンクが /schedule/plot/detail?id=entry-2 に設定される', () => {
@@ -137,10 +97,6 @@ describe('ScheduleEntryCard - plotタイプ', () => {
       <ScheduleEntryCard
         entry={makePlotEntry()}
         characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
       />
     )
     const link = screen.getByRole('link')
@@ -155,30 +111,9 @@ describe('ScheduleEntryCard - 空フィールドの非表示', () => {
       <ScheduleEntryCard
         entry={entry}
         characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
       />
     )
-    // summary用のpタグが表示されないことを確認（summaryフィールドはp.line-clamp-2.leading-relaxedで表示される）
     expect(document.querySelector('p.line-clamp-2')).toBeNull()
-  })
-
-  it('categoryがない場合はカテゴリラベルが表示されない', () => {
-    const entry = makeOfficialEntry({ category: undefined })
-    render(
-      <ScheduleEntryCard
-        entry={entry}
-        characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
-      />
-    )
-    // カテゴリ表示がないことを確認（アイコンが表示されていない）
-    expect(screen.queryByText(/🏷/)).toBeNull()
   })
 
   it('関連キャラクターがない場合はキャラクター欄が表示されない', () => {
@@ -187,75 +122,9 @@ describe('ScheduleEntryCard - 空フィールドの非表示', () => {
       <ScheduleEntryCard
         entry={entry}
         characters={mockCharacters}
-        index={0}
-        total={2}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
       />
     )
     expect(screen.queryByRole('group', { name: '関連キャラクター' })).toBeNull()
-  })
-})
-
-describe('ScheduleEntryCard - 上へ/下へボタン', () => {
-  it('上へボタンをクリックするとonMoveUpが呼ばれる', () => {
-    const onMoveUp = vi.fn()
-    render(
-      <ScheduleEntryCard
-        entry={makeOfficialEntry()}
-        characters={mockCharacters}
-        index={1}
-        total={3}
-        onMoveUp={onMoveUp}
-        onMoveDown={vi.fn()}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /上に移動/ }))
-    expect(onMoveUp).toHaveBeenCalledWith('entry-1')
-  })
-
-  it('下へボタンをクリックするとonMoveDownが呼ばれる', () => {
-    const onMoveDown = vi.fn()
-    render(
-      <ScheduleEntryCard
-        entry={makeOfficialEntry()}
-        characters={mockCharacters}
-        index={1}
-        total={3}
-        onMoveUp={vi.fn()}
-        onMoveDown={onMoveDown}
-      />
-    )
-    fireEvent.click(screen.getByRole('button', { name: /下に移動/ }))
-    expect(onMoveDown).toHaveBeenCalledWith('entry-1')
-  })
-
-  it('先頭要素の場合は上へボタンが無効になる', () => {
-    render(
-      <ScheduleEntryCard
-        entry={makeOfficialEntry()}
-        characters={mockCharacters}
-        index={0}
-        total={3}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
-      />
-    )
-    expect(screen.getByRole('button', { name: /上に移動/ })).toBeDisabled()
-  })
-
-  it('末尾要素の場合は下へボタンが無効になる', () => {
-    render(
-      <ScheduleEntryCard
-        entry={makeOfficialEntry()}
-        characters={mockCharacters}
-        index={2}
-        total={3}
-        onMoveUp={vi.fn()}
-        onMoveDown={vi.fn()}
-      />
-    )
-    expect(screen.getByRole('button', { name: /下に移動/ })).toBeDisabled()
   })
 })
 

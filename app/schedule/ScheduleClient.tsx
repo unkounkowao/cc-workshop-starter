@@ -11,7 +11,6 @@ import {
   getNextYearSortOrder,
   loadEntries,
   deleteEntry,
-  updateEntrySortOrders,
   sortEntriesInMonth,
   countEntriesForYear,
 } from '@/lib/scheduleStorage'
@@ -394,36 +393,6 @@ export default function ScheduleClient() {
     showSuccess('年を削除しました')
   }
 
-  // エントリを上に移動
-  const handleEntryMoveUp = useCallback((id: string) => {
-    const entry = entries.find((e) => e.id === id)
-    if (!entry) return
-    const monthEntries = sortEntriesInMonth(
-      entries.filter((e) => e.monthId === entry.monthId && e.yearId === entry.yearId)
-    )
-    const idx = monthEntries.findIndex((e) => e.id === id)
-    if (idx <= 0) return
-    const ids = monthEntries.map((e) => e.id)
-    ;[ids[idx - 1], ids[idx]] = [ids[idx], ids[idx - 1]]
-    updateEntrySortOrders(ids)
-    setEntries(loadEntries(entry.yearId))
-  }, [entries])
-
-  // エントリを下に移動
-  const handleEntryMoveDown = useCallback((id: string) => {
-    const entry = entries.find((e) => e.id === id)
-    if (!entry) return
-    const monthEntries = sortEntriesInMonth(
-      entries.filter((e) => e.monthId === entry.monthId && e.yearId === entry.yearId)
-    )
-    const idx = monthEntries.findIndex((e) => e.id === id)
-    if (idx < 0 || idx >= monthEntries.length - 1) return
-    const ids = monthEntries.map((e) => e.id)
-    ;[ids[idx], ids[idx + 1]] = [ids[idx + 1], ids[idx]]
-    updateEntrySortOrders(ids)
-    setEntries(loadEntries(entry.yearId))
-  }, [entries])
-
   if (!mounted) return null
 
   // ===== 空状態（年なし） =====
@@ -581,15 +550,11 @@ export default function ScheduleClient() {
                       </p>
                     ) : (
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {monthEntries.map((entry, i) => (
+                        {monthEntries.map((entry) => (
                           <ScheduleEntryCard
                             key={entry.id}
                             entry={entry}
                             characters={characters}
-                            index={i}
-                            total={monthEntries.length}
-                            onMoveUp={handleEntryMoveUp}
-                            onMoveDown={handleEntryMoveDown}
                           />
                         ))}
                       </div>
