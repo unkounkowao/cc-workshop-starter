@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { saveToGist, loadFromGist, saveScheduleToGist, loadScheduleFromGist, saveMemoToGist, loadMemoFromGist } from '@/lib/gist'
 import { validateImportData } from '@/lib/validation'
 import { loadData, saveData } from '@/lib/storage'
@@ -104,7 +105,7 @@ export default function GistSync() {
   }
 
   // 読み込み（Gistを1回だけフェッチして全データを処理）
-  const autoLoad = () => {
+  const autoLoad = (showFeedback = false) => {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
 
@@ -204,9 +205,14 @@ export default function GistSync() {
 
         if (changed) {
           window.dispatchEvent(new CustomEvent('gist-synced'))
+          if (showFeedback) showStatus('同期しました', true)
+        } else if (showFeedback) {
+          showStatus('最新の状態です', true)
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        if (showFeedback) showStatus('同期に失敗しました', false)
+      })
   }
 
   useEffect(() => {
@@ -278,12 +284,103 @@ export default function GistSync() {
     }
   }
 
+  const modal = open && (
+    <div
+      className="fixed inset-0 bg-black/50 z-[9999] flex items-start justify-center p-4 overflow-y-auto"
+      onClick={() => setOpen(false)}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-md mt-8 mb-8"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="sync-dialog-title"
+      >
+        <div className="p-6">
+          <h2 id="sync-dialog-title" className="text-lg font-semibold text-slate-900 mb-1">
+            クロスデバイス同期
+          </h2>
+          <p className="text-xs text-slate-500 mb-5 leading-relaxed">
+            GitHub Gist を使ってデバイス間でデータを共有します。キャラクター・カレンダー・メモをまとめて同期します。
+            設定済みの場合はページを開くと自動読み込み、タブを閉じると自動保存します。
+          </p>
+
+          <div className="mb-4">
+            <label htmlFor="gist-token" className="block text-sm font-medium text-slate-700 mb-1">
+              GitHub Personal Access Token<span className="ml-1 text-red-500">*</span>
+            </label>
+            <input
+              id="gist-token"
+              type="password"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400 font-mono"
+              autoComplete="off"
+            />
+            <p className="mt-1 text-xs text-slate-400">
+              GitHub Settings → Developer settings → Personal access tokens → Gistスコープを付与
+            </p>
+          </div>
+
+          <div className="mb-6">
+            <label htmlFor="gist-id" className="block text-sm font-medium text-slate-700 mb-1">
+              Gist ID<span className="ml-2 text-xs text-slate-400 font-normal">（初回保存後に自動入力）</span>
+            </label>
+            <input
+              id="gist-id"
+              type="text"
+              value={gistId}
+              onChange={(e) => setGistId(e.target.value)}
+              placeholder="例：a1b2c3d4e5f6..."
+              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400 font-mono"
+            />
+          </div>
+
+          <div className="mb-5 p-3 bg-sky-50 rounded-lg text-xs text-sky-800 leading-relaxed">
+            <p className="font-medium mb-1">初回設定手順</p>
+            <p>① PCで「Gistに保存」→ Gist IDをコピー</p>
+            <p>② スマホで同じPAT + Gist IDを入力して「Gistから読み込み」</p>
+            <p>③ 以降はページを開くと自動同期</p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={handleSave}
+              disabled={loading}
+              className="flex-1 px-4 py-2 text-sm text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-50 rounded-lg transition-colors"
+            >
+              {loading ? '処理中...' : gistId ? 'Gistに保存（上書き）' : 'Gistに保存（新規作成）'}
+            </button>
+            <button
+              onClick={handleLoad}
+              disabled={loading || !gistId.trim()}
+              className="flex-1 px-4 py-2 text-sm text-sky-600 border border-sky-300 hover:bg-sky-50 disabled:opacity-40 rounded-lg transition-colors"
+            >
+              {loading ? '処理中...' : 'Gistから読み込み'}
+            </button>
+          </div>
+
+          <button
+            onClick={() => setOpen(false)}
+            className="mt-3 w-full py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            閉じる
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          autoLoad(true)
+          setOpen(true)
+        }}
         className="px-3 py-1.5 text-sm font-medium text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-all"
-        title="クロスデバイス同期（GitHub Gist）"
+        title="同期設定 / 今すぐ同期"
       >
         ☁
       </button>
@@ -294,93 +391,7 @@ export default function GistSync() {
         </span>
       )}
 
-      {open && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center p-4 overflow-y-auto"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            className="bg-white rounded-xl shadow-2xl w-full max-w-md mt-8 mb-8"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="sync-dialog-title"
-          >
-            <div className="p-6">
-              <h2 id="sync-dialog-title" className="text-lg font-semibold text-slate-900 mb-1">
-                クロスデバイス同期
-              </h2>
-              <p className="text-xs text-slate-500 mb-5 leading-relaxed">
-                GitHub Gist を使ってデバイス間でデータを共有します。キャラクター・カレンダー・メモをまとめて同期します。
-                設定済みの場合はページを開くと自動読み込み、タブを閉じると自動保存します。
-              </p>
-
-              <div className="mb-4">
-                <label htmlFor="gist-token" className="block text-sm font-medium text-slate-700 mb-1">
-                  GitHub Personal Access Token<span className="ml-1 text-red-500">*</span>
-                </label>
-                <input
-                  id="gist-token"
-                  type="password"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400 font-mono"
-                  autoComplete="off"
-                />
-                <p className="mt-1 text-xs text-slate-400">
-                  GitHub Settings → Developer settings → Personal access tokens → Gistスコープを付与
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <label htmlFor="gist-id" className="block text-sm font-medium text-slate-700 mb-1">
-                  Gist ID<span className="ml-2 text-xs text-slate-400 font-normal">（初回保存後に自動入力）</span>
-                </label>
-                <input
-                  id="gist-id"
-                  type="text"
-                  value={gistId}
-                  onChange={(e) => setGistId(e.target.value)}
-                  placeholder="例：a1b2c3d4e5f6..."
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400 font-mono"
-                />
-              </div>
-
-              <div className="mb-5 p-3 bg-sky-50 rounded-lg text-xs text-sky-800 leading-relaxed">
-                <p className="font-medium mb-1">初回設定手順</p>
-                <p>① PCで「Gistに保存」→ Gist IDをコピー</p>
-                <p>② スマホで同じPAT + Gist IDを入力して「Gistから読み込み」</p>
-                <p>③ 以降はページを開くと自動同期</p>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-2">
-                <button
-                  onClick={handleSave}
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 text-sm text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-50 rounded-lg transition-colors"
-                >
-                  {loading ? '処理中...' : gistId ? 'Gistに保存（上書き）' : 'Gistに保存（新規作成）'}
-                </button>
-                <button
-                  onClick={handleLoad}
-                  disabled={loading || !gistId.trim()}
-                  className="flex-1 px-4 py-2 text-sm text-sky-600 border border-sky-300 hover:bg-sky-50 disabled:opacity-40 rounded-lg transition-colors"
-                >
-                  {loading ? '処理中...' : 'Gistから読み込み'}
-                </button>
-              </div>
-
-              <button
-                onClick={() => setOpen(false)}
-                className="mt-3 w-full py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                閉じる
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {typeof document !== 'undefined' && createPortal(modal, document.body)}
     </>
   )
 }
