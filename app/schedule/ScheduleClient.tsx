@@ -8,7 +8,6 @@ import {
   loadYears,
   saveYear,
   deleteYear,
-  updateYearSortOrders,
   getNextYearSortOrder,
   loadEntries,
   deleteEntry,
@@ -395,26 +394,6 @@ export default function ScheduleClient() {
     showSuccess('年を削除しました')
   }
 
-  // 年を上に移動
-  const handleYearMoveUp = (id: string) => {
-    const idx = years.findIndex((y) => y.id === id)
-    if (idx <= 0) return
-    const ids = years.map((y) => y.id)
-    ;[ids[idx - 1], ids[idx]] = [ids[idx], ids[idx - 1]]
-    updateYearSortOrders(ids)
-    setYears(loadYears())
-  }
-
-  // 年を下に移動
-  const handleYearMoveDown = (id: string) => {
-    const idx = years.findIndex((y) => y.id === id)
-    if (idx < 0 || idx >= years.length - 1) return
-    const ids = years.map((y) => y.id)
-    ;[ids[idx], ids[idx + 1]] = [ids[idx + 1], ids[idx]]
-    updateYearSortOrders(ids)
-    setYears(loadYears())
-  }
-
   // エントリを上に移動
   const handleEntryMoveUp = useCallback((id: string) => {
     const entry = entries.find((e) => e.id === id)
@@ -481,14 +460,13 @@ export default function ScheduleClient() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-50">
       {/* ===== ツールバー ===== */}
       <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
-          {/* 上段 */}
+        <div className="max-w-7xl mx-auto px-4 py-2">
           <div className="flex items-center gap-2 flex-wrap">
             {/* 年セレクタ */}
             <select
               value={selectedYearId ?? ''}
               onChange={(e) => handleYearChange(e.target.value)}
-              className="flex-1 min-w-0 max-w-xs border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400"
+              className="w-28 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sky-400"
               aria-label="表示する年を選択"
             >
               {years.map((y) => (
@@ -500,52 +478,31 @@ export default function ScheduleClient() {
             <button
               type="button"
               onClick={() => { setEditingYear(null); setShowYearModal(true) }}
-              className="px-3 py-1.5 text-xs text-sky-600 border border-sky-300 rounded-lg hover:bg-sky-50 transition-colors whitespace-nowrap"
+              className="px-2.5 py-1.5 text-xs text-sky-600 border border-sky-300 rounded-lg hover:bg-sky-50 transition-colors whitespace-nowrap"
             >
-              + 年を追加
+              + 追加
             </button>
             {selectedYear && (
               <>
                 <button
                   type="button"
                   onClick={() => { setEditingYear(selectedYear); setShowYearModal(true) }}
-                  className="px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                  className="px-2.5 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
                   aria-label={`${selectedYear.name} を編集`}
                 >
                   編集
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleYearMoveUp(selectedYear.id)}
-                  disabled={years[0]?.id === selectedYear.id}
-                  className="px-2 py-1.5 text-xs text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  aria-label="年を前に移動"
-                >
-                  ←
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleYearMoveDown(selectedYear.id)}
-                  disabled={years[years.length - 1]?.id === selectedYear.id}
-                  className="px-2 py-1.5 text-xs text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  aria-label="年を後に移動"
-                >
-                  →
-                </button>
-                <button
-                  type="button"
                   onClick={() => setDeleteYearTarget(selectedYear)}
-                  className="px-3 py-1.5 text-xs text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                  className="px-2.5 py-1.5 text-xs text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                   aria-label={`${selectedYear.name} を削除`}
                 >
                   削除
                 </button>
               </>
             )}
-          </div>
 
-          {/* 下段 */}
-          <div className="flex items-center gap-2 flex-wrap">
             {/* バックアップ */}
             <div className="ml-auto">
               <BackupPanel
@@ -554,7 +511,6 @@ export default function ScheduleClient() {
               />
             </div>
           </div>
-
         </div>
       </div>
 
@@ -580,7 +536,7 @@ export default function ScheduleClient() {
                 href={`/schedule/plot/new?yearId=${selectedYear.id}`}
                 className="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
               >
-                + プロット・出来事を追加
+                + 出来事を追加
               </Link>
             </div>
           </div>
@@ -613,7 +569,7 @@ export default function ScheduleClient() {
                           className="px-2.5 py-1 text-xs text-amber-600 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          + プロット
+                          + 出来事
                         </Link>
                         <span className="text-slate-300 text-sm group-open:rotate-180 transition-transform" aria-hidden="true">▼</span>
                       </div>
