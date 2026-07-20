@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { saveToGist, loadFromGist, saveScheduleToGist, loadScheduleFromGist, saveMemoToGist, loadMemoFromGist } from '@/lib/gist'
+import { validateImportData } from '@/lib/validation'
 import { loadData, saveData } from '@/lib/storage'
 import { loadScheduleData, saveScheduleData } from '@/lib/scheduleStorage'
 import { loadMemoData, saveMemoData, MEMO_DELETED_IDS_KEY, MEMO_VERSION } from '@/lib/memoStorage'
@@ -102,69 +103,106 @@ export default function GistSync() {
     }
   }
 
-  // 読み込み（各データを独立して並列取得、マージはそれぞれ）
+  // 読み込み（Gistを1回だけフェッチして全データを処理）
   const autoLoad = () => {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
 
-    // キャラクターデータ
-    loadFromGist(savedToken, savedGistId)
-      .then((gistData) => {
-        const localData = loadData()
-        const deletedRaw = localStorage.getItem(DELETED_IDS_KEY)
-        const deletedList: { id: string; deletedAt: string }[] = deletedRaw ? JSON.parse(deletedRaw) : []
-        const deletedMap = new Map(deletedList.map((d) => [d.id, d.deletedAt]))
-        const localMap = new Map(localData.characters.map((c) => [c.id, c]))
-        const gistMap = new Map(gistData.characters.map((c) => [c.id, c]))
-        const allIds = new Set([...localMap.keys(), ...gistMap.keys()])
-        const merged = Array.from(allIds).flatMap((id) => {
-          const deletedAt = deletedMap.get(id)
-          const local = localMap.get(id)
-          const gist = gistMap.get(id)
-          if (deletedAt && gist && deletedAt >= gist.updatedAt) return []
-          if (local && gist) return [local.updatedAt >= gist.updatedAt ? local : gist]
-          if (local) return [local]
-          return [gist!]
-        })
-        const hasChange =
-          merged.some((c) => { const l = localMap.get(c.id); return !l || l.updatedAt !== c.updatedAt }) ||
-          merged.length !== localData.characters.length
-        if (hasChange) {
-          saveData({ version: DATA_VERSION, characters: merged }, false)
-          window.dispatchEvent(new CustomEvent('gist-synced'))
-        }
-      })
-      .catch(() => {})
+    fetch(`https://api.github.com/gists/${savedGistId}`, {
+      headers: {
+        Authorization: `Bearer ${savedToken}`,
+        Accept: 'application/vnd.github+json',
+      },
+      cache: 'no-store',
+    })
+      .then(async (res) => {
+        if (!res.ok) return
+        const gist = await res.json()
 
-    // スケジュールデータ
-    loadScheduleFromGist(savedToken, savedGistId)
-      .then((remote) => {
-        if (!remote) return
-        const local = loadScheduleData()
-        const merged = mergeSchedule(local, remote)
-        const hasChange =
-          merged.years.length !== local.years.length ||
-          merged.entries.length !== local.entries.length ||
-          merged.years.some((y) => { const l = local.years.find((x) => x.id === y.id); return !l || l.updatedAt !== y.updatedAt }) ||
-          merged.entries.some((e) => { const l = local.entries.find((x) => x.id === e.id); return !l || l.updatedAt !== e.updatedAt })
-        if (hasChange) {
-          saveScheduleData(merged)
-          window.dispatchEvent(new CustomEvent('gist-synced'))
+        const getContent = async (filename: string): Promise<string | null> => {
+          const file = gist.files[filename]
+          if (!file) return null
+          return file.truncated
+            ? await fetch(file.raw_url).then((r) => r.text())
+            : file.content
         }
-      })
-      .catch(() => {})
 
-    // メモデータ
-    loadMemoFromGist(savedToken, savedGistId)
-      .then((remote) => {
-        if (!remote) return
-        const local = loadMemoData()
-        const merged = mergeMemo(local, remote)
-        const hasChange =
-          merged.memos.length !== local.memos.length ||
-          merged.memos.some((m) => { const l = local.memos.find((x) => x.id === m.id); return !l || l.updatedAt !== m.updatedAt })
-        if (hasChange) {
-          saveMemoData(merged)
+        let changed = false
+
+        // キャラクターデータ
+        try {
+          const raw = await getContent('character-sheet-data.json')
+          if (raw) {
+            const parsed: unknown = JSON.parse(raw)
+            if (validateImportData(parsed)) {
+              const localData = loadData()
+              const deletedRaw = localStorage.getItem(DELETED_IDS_KEY)
+              const deletedList: { id: string; deletedAt: string }[] = deletedRaw ? JSON.parse(deletedRaw) : []
+              const deletedMap = new Map(deletedList.map((d) => [d.id, d.deletedAt]))
+              const localMap = new Map(localData.characters.map((c) => [c.id, c]))
+              const gistMap = new Map(parsed.characters.map((c) => [c.id, c]))
+              const allIds = new Set([...localMap.keys(), ...gistMap.keys()])
+              const merged = Array.from(allIds).flatMap((id) => {
+                const deletedAt = deletedMap.get(id)
+                const local = localMap.get(id)
+                const remote = gistMap.get(id)
+                if (deletedAt && remote && deletedAt >= remote.updatedAt) return []
+                if (local && remote) return [local.updatedAt >= remote.updatedAt ? local : remote]
+                if (local) return [local]
+                return [remote!]
+              })
+              const hasChange =
+                merged.some((c) => { const l = localMap.get(c.id); return !l || l.updatedAt !== c.updatedAt }) ||
+                merged.length !== localData.characters.length
+              if (hasChange) {
+                saveData({ version: DATA_VERSION, characters: merged }, false)
+                changed = true
+              }
+            }
+          }
+        } catch { /* ignore */ }
+
+        // スケジュールデータ
+        try {
+          const raw = await getContent('schedule-data.json')
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            if (parsed && Array.isArray(parsed.years) && Array.isArray(parsed.entries)) {
+              const local = loadScheduleData()
+              const merged = mergeSchedule(local, parsed)
+              const hasChange =
+                merged.years.length !== local.years.length ||
+                merged.entries.length !== local.entries.length ||
+                merged.years.some((y) => { const l = local.years.find((x) => x.id === y.id); return !l || l.updatedAt !== y.updatedAt }) ||
+                merged.entries.some((e) => { const l = local.entries.find((x) => x.id === e.id); return !l || l.updatedAt !== e.updatedAt })
+              if (hasChange) {
+                saveScheduleData(merged)
+                changed = true
+              }
+            }
+          }
+        } catch { /* ignore */ }
+
+        // メモデータ
+        try {
+          const raw = await getContent('memo-data.json')
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            if (parsed && Array.isArray(parsed.memos)) {
+              const local = loadMemoData()
+              const merged = mergeMemo(local, parsed)
+              const hasChange =
+                merged.memos.length !== local.memos.length ||
+                merged.memos.some((m) => { const l = local.memos.find((x) => x.id === m.id); return !l || l.updatedAt !== m.updatedAt })
+              if (hasChange) {
+                saveMemoData(merged)
+                changed = true
+              }
+            }
+          }
+        } catch { /* ignore */ }
+
+        if (changed) {
           window.dispatchEvent(new CustomEvent('gist-synced'))
         }
       })
