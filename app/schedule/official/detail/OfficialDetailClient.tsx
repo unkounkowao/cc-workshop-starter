@@ -123,7 +123,7 @@ export default function OfficialDetailClient() {
             href="/schedule"
             className="inline-flex items-center gap-1 text-sm text-sky-600 hover:text-sky-700 hover:underline transition-colors"
           >
-            ← 年間スケジュールへ戻る
+            ← カレンダーへ戻る
           </Link>
         </nav>
 
@@ -165,14 +165,14 @@ export default function OfficialDetailClient() {
             </div>
           </div>
 
-          <h1 className="text-2xl font-bold text-slate-900">{entry.title}</h1>
-
           {(monthObj || dateStr) && (
             <p className="text-sm text-slate-500">
               {monthObj && <span className="text-slate-600">{monthObj.name}</span>}
               {dateStr && <span className="ml-2">{dateStr}</span>}
             </p>
           )}
+
+          <h1 className="text-2xl font-bold text-slate-900">{entry.title}</h1>
         </div>
 
         {/* メインコンテンツ */}

@@ -1,8 +1,9 @@
 import { validateImportData } from './validation'
-import type { CharacterSheetData, MemoData } from './types'
+import type { CharacterSheetData, MemoData, ScheduleData } from './types'
 
 const GIST_FILENAME = 'character-sheet-data.json'
 const MEMO_GIST_FILENAME = 'memo-data.json'
+const SCHEDULE_GIST_FILENAME = 'schedule-data.json'
 
 // Gistにデータを保存（新規作成またはPATCH）
 export async function saveToGist(
@@ -136,4 +137,59 @@ export async function loadMemoFromGist(
   const parsed = JSON.parse(content)
   if (!parsed || !Array.isArray(parsed.memos)) return null
   return parsed as MemoData
+}
+
+// スケジュールデータをGistに保存（既存のGistにファイルを追加/更新）
+export async function saveScheduleToGist(
+  token: string,
+  gistId: string,
+  data: ScheduleData
+): Promise<void> {
+  const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/vnd.github+json',
+    },
+    body: JSON.stringify({
+      files: {
+        [SCHEDULE_GIST_FILENAME]: {
+          content: JSON.stringify(data, null, 2),
+        },
+      },
+    }),
+  })
+  if (!response.ok) {
+    const status = response.status
+    if (status === 401) throw new Error('認証エラー：Personal Access Tokenを確認してください')
+    if (status === 404) throw new Error('Gistが見つかりません')
+    throw new Error(`スケジュール保存に失敗しました（${status}）`)
+  }
+}
+
+// GistからスケジュールデータをGETして返す
+export async function loadScheduleFromGist(
+  token: string,
+  gistId: string
+): Promise<ScheduleData | null> {
+  const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+    },
+  })
+  if (!response.ok) return null
+
+  const gist = await response.json()
+  const file = gist.files[SCHEDULE_GIST_FILENAME]
+  if (!file) return null
+
+  const content: string = file.truncated
+    ? await fetch(file.raw_url).then((r) => r.text())
+    : file.content
+
+  const parsed = JSON.parse(content)
+  if (!parsed || !Array.isArray(parsed.years) || !Array.isArray(parsed.entries)) return null
+  return parsed as ScheduleData
 }

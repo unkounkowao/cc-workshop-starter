@@ -39,7 +39,7 @@ export default function AppNavigation() {
             世界観
           </Link>
           <Link href="/schedule" className={linkClass(isSchedule)}>
-            年間スケジュール
+            カレンダー
           </Link>
           <Link href="/memo" className={linkClass(isMemo)}>
             メモ

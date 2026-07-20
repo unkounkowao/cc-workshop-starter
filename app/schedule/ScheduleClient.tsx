@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Toast from '@/components/Toast'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import ScheduleEntryCard from '@/components/ScheduleEntryCard'
+import ScheduleGistSync from '@/components/ScheduleGistSync'
 import {
   loadYears,
   saveYear,
@@ -20,7 +21,7 @@ import {
   DEFAULT_MONTH_NAMES,
 } from '@/lib/constants'
 import { generateId, now } from '@/lib/utils'
-import type { StoryYear, ScheduleEntry, Toast as ToastType, ScheduleImportMode } from '@/lib/types'
+import type { StoryYear, ScheduleEntry, ScheduleData, Toast as ToastType, ScheduleImportMode } from '@/lib/types'
 
 // ===== 年フォームモーダル =====
 
@@ -309,6 +310,18 @@ export default function ScheduleClient() {
   const [deleteYearTarget, setDeleteYearTarget] = useState<StoryYear | null>(null)
   const [toasts, setToasts] = useState<ToastType[]>([])
 
+  const scheduleData: ScheduleData = useMemo(
+    () => ({ version: 1, years, entries: loadEntries() }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [years, entries]
+  )
+
+  const reloadAll = useCallback(() => {
+    const updatedYears = loadYears()
+    setYears(updatedYears)
+    if (selectedYearId) setEntries(loadEntries(selectedYearId))
+  }, [selectedYearId])
+
   const showSuccess = useCallback((msg: string) => addToast(setToasts, msg, 'success'), [])
   const showError = useCallback((msg: string) => addToast(setToasts, msg, 'error'), [])
 
@@ -399,7 +412,7 @@ export default function ScheduleClient() {
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center space-y-4">
             <div className="text-5xl" aria-hidden="true">📅</div>
-            <h1 className="text-2xl font-bold text-slate-800">年間スケジュール</h1>
+            <h1 className="text-2xl font-bold text-slate-800">カレンダー</h1>
             <p className="text-slate-500 text-sm">最初の年を追加してスケジュールを作成しましょう</p>
             <button
               type="button"
@@ -426,13 +439,13 @@ export default function ScheduleClient() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-50">
       {/* ===== ツールバー ===== */}
       <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="max-w-7xl mx-auto px-3 py-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto">
             {/* 年セレクタ */}
             <select
               value={selectedYearId ?? ''}
               onChange={(e) => handleYearChange(e.target.value)}
-              className="w-28 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sky-400"
+              className="w-24 shrink-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-sky-400"
               aria-label="表示する年を選択"
             >
               {years.map((y) => (
@@ -440,39 +453,40 @@ export default function ScheduleClient() {
               ))}
             </select>
 
-            {/* 年管理ボタン群 */}
             <button
               type="button"
               onClick={() => { setEditingYear(null); setShowYearModal(true) }}
-              className="px-2.5 py-1.5 text-xs text-sky-600 border border-sky-300 rounded-lg hover:bg-sky-50 transition-colors whitespace-nowrap"
+              className="shrink-0 px-2 py-1.5 text-xs text-sky-600 border border-sky-300 rounded-lg hover:bg-sky-50 transition-colors whitespace-nowrap"
             >
-              + 追加
+              +追加
             </button>
             {selectedYear && (
               <>
                 <button
                   type="button"
                   onClick={() => { setEditingYear(selectedYear); setShowYearModal(true) }}
-                  className="px-2.5 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-                  aria-label={`${selectedYear.name} を編集`}
+                  className="shrink-0 px-2 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
                 >
                   編集
                 </button>
                 <button
                   type="button"
                   onClick={() => setDeleteYearTarget(selectedYear)}
-                  className="px-2.5 py-1.5 text-xs text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                  aria-label={`${selectedYear.name} を削除`}
+                  className="shrink-0 px-2 py-1.5 text-xs text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
                 >
                   削除
                 </button>
               </>
             )}
 
-            {/* バックアップ */}
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1.5 shrink-0">
+              <ScheduleGistSync
+                data={scheduleData}
+                onSynced={reloadAll}
+                onToast={(msg, type) => addToast(setToasts, msg, type)}
+              />
               <BackupPanel
-                onSuccess={(msg) => { showSuccess(msg); setYears(loadYears()); if (selectedYearId) setEntries(loadEntries(selectedYearId)) }}
+                onSuccess={(msg) => { showSuccess(msg); reloadAll() }}
                 onError={showError}
               />
             </div>
