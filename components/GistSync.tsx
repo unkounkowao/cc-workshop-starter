@@ -220,7 +220,8 @@ export default function GistSync() {
       }
     }
     document.addEventListener('visibilitychange', onVisibility)
-    const poll = setInterval(autoLoad, 30000)
+    // 30秒ごとにsave→loadの順で同期（スマホでvisibilitychangeが発火しない場合の保険）
+    const poll = setInterval(() => { autoSave().then(() => autoLoad()) }, 30000)
     return () => {
       document.removeEventListener('visibilitychange', onVisibility)
       clearInterval(poll)
