@@ -197,15 +197,6 @@ export default function ScheduleEntryForm({
     [errors]
   )
 
-  // 年変更時は月をリセット
-  const handleYearChange = useCallback(
-    (yearId: string) => {
-      setForm((prev) => ({ ...prev, yearId, monthId: '', relatedEntryIds: [] }))
-      setIsDirty(true)
-    },
-    []
-  )
-
   // エントリを組み立てる共通処理
   const buildEntry = useCallback((): ScheduleEntry | null => {
     const candidate: Partial<ScheduleEntry> = {
@@ -298,10 +289,7 @@ export default function ScheduleEntryForm({
       {/* フォーム本体 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* ---- 基本情報セクション ---- */}
-        <section aria-labelledby="section-basic">
-          <h3 id="section-basic" className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-100 pb-1">
-            基本情報
-          </h3>
+        <section>
           <div className="space-y-4">
             {/* タイトル */}
             <TitleField
@@ -310,29 +298,18 @@ export default function ScheduleEntryForm({
               onChange={(v) => update('title', v)}
             />
 
-            {/* 年・月 (2カラム) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <YearField
-                years={years}
-                value={form.yearId}
-                error={errors.yearId}
-                onChange={handleYearChange}
-              />
-              <MonthField
-                year={selectedYear}
-                value={form.monthId}
-                error={errors.monthId}
-                onChange={(v) => update('monthId', v)}
-              />
-            </div>
+            {/* 月 */}
+            <MonthField
+              year={selectedYear}
+              value={form.monthId}
+              error={errors.monthId}
+              onChange={(v) => update('monthId', v)}
+            />
           </div>
         </section>
 
         {/* ---- 日時セクション ---- */}
         <section aria-labelledby="section-date">
-          <h3 id="section-date" className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-100 pb-1">
-            日時
-          </h3>
           <div className="space-y-4">
             {/* 開始日・終了日 (2カラム) */}
             <div className="grid grid-cols-2 gap-4">
@@ -376,13 +353,10 @@ export default function ScheduleEntryForm({
 
         {/* ---- 内容セクション ---- */}
         <section aria-labelledby="section-content">
-          <h3 id="section-content" className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-100 pb-1">
-            内容
-          </h3>
           <div className="space-y-4">
             {/* 概要 */}
             <div>
-              <FieldLabel htmlFor="field-summary">概要</FieldLabel>
+              <FieldLabel htmlFor="field-summary">イベント概要</FieldLabel>
               <textarea
                 id="field-summary"
                 value={form.summary}
@@ -395,7 +369,7 @@ export default function ScheduleEntryForm({
 
             {/* 詳細 */}
             <div>
-              <FieldLabel htmlFor="field-details">詳細</FieldLabel>
+              <FieldLabel htmlFor="field-details">出来事</FieldLabel>
               <textarea
                 id="field-details"
                 value={form.details}
@@ -410,9 +384,6 @@ export default function ScheduleEntryForm({
 
         {/* ---- 重要度 ---- */}
         <section aria-labelledby="section-classify">
-          <h3 id="section-classify" className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-100 pb-1">
-            分類
-          </h3>
           <div className="max-w-xs">
             <FieldLabel htmlFor="field-importance">重要度</FieldLabel>
             <select
@@ -487,41 +458,6 @@ function TitleField({
   )
 }
 
-function YearField({
-  years,
-  value,
-  error,
-  onChange,
-}: {
-  years: StoryYear[]
-  value: string
-  error?: string
-  onChange: (v: string) => void
-}) {
-  return (
-    <div>
-      <FieldLabel htmlFor="field-yearId" required>
-        年
-      </FieldLabel>
-      <select
-        id="field-yearId"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={error ? selectErrorClass : selectClass}
-        aria-required="true"
-        aria-describedby={error ? 'yearId-error' : undefined}
-      >
-        <option value="">年を選択...</option>
-        {years.map((y) => (
-          <option key={y.id} value={y.id}>
-            {y.name}
-          </option>
-        ))}
-      </select>
-      <FieldError message={error} />
-    </div>
-  )
-}
 
 function MonthField({
   year,
