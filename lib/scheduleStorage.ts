@@ -1,4 +1,4 @@
-import { SCHEDULE_STORAGE_KEY, SCHEDULE_DATA_VERSION } from './constants'
+import { SCHEDULE_STORAGE_KEY, SCHEDULE_DATA_VERSION, SCHEDULE_DELETED_IDS_KEY } from './constants'
 import type { ScheduleData, StoryYear, ScheduleEntry, StoryMonth } from './types'
 
 function getDefaultData(): ScheduleData {
@@ -52,12 +52,24 @@ export function saveYear(year: StoryYear): void {
   saveScheduleData(data)
 }
 
+function recordDeletedId(id: string): void {
+  try {
+    const raw = localStorage.getItem(SCHEDULE_DELETED_IDS_KEY)
+    const list: { id: string; deletedAt: string }[] = raw ? JSON.parse(raw) : []
+    list.push({ id, deletedAt: new Date().toISOString() })
+    localStorage.setItem(SCHEDULE_DELETED_IDS_KEY, JSON.stringify(list))
+  } catch { /* ignore */ }
+}
+
 // 年を削除（関連エントリも削除）
 export function deleteYear(id: string): void {
   const data = loadScheduleData()
+  const entryIds = data.entries.filter((e) => e.yearId === id).map((e) => e.id)
   data.years = data.years.filter((y) => y.id !== id)
   data.entries = data.entries.filter((e) => e.yearId !== id)
   saveScheduleData(data)
+  recordDeletedId(id)
+  entryIds.forEach(recordDeletedId)
 }
 
 // 年の並び順更新
@@ -115,6 +127,7 @@ export function deleteEntry(id: string): void {
     e.relatedEntryIds = e.relatedEntryIds.filter((rid) => rid !== id)
   })
   saveScheduleData(data)
+  recordDeletedId(id)
 }
 
 // 月内のエントリ並び順更新

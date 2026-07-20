@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { saveToGist, loadFromGist, saveScheduleToGist, loadScheduleFromGist } from '@/lib/gist'
 import { loadData, saveData } from '@/lib/storage'
 import { loadScheduleData, saveScheduleData } from '@/lib/scheduleStorage'
-import { DATA_VERSION, DELETED_IDS_KEY, SCHEDULE_DATA_VERSION } from '@/lib/constants'
+import { DATA_VERSION, DELETED_IDS_KEY, SCHEDULE_DATA_VERSION, SCHEDULE_DELETED_IDS_KEY } from '@/lib/constants'
 
 const TOKEN_KEY = 'novel-cs-gist-token'
 const GIST_ID_KEY = 'novel-cs-gist-id'
@@ -13,24 +13,32 @@ function mergeSchedule(
   local: ReturnType<typeof loadScheduleData>,
   remote: ReturnType<typeof loadScheduleData>
 ) {
+  const deletedRaw = localStorage.getItem(SCHEDULE_DELETED_IDS_KEY)
+  const deletedList: { id: string; deletedAt: string }[] = deletedRaw ? JSON.parse(deletedRaw) : []
+  const deletedMap = new Map(deletedList.map((d) => [d.id, d.deletedAt]))
+
   const localYearMap = new Map(local.years.map((y) => [y.id, y]))
   const remoteYearMap = new Map(remote.years.map((y) => [y.id, y]))
   const allYearIds = new Set([...localYearMap.keys(), ...remoteYearMap.keys()])
-  const years = Array.from(allYearIds).map((id) => {
+  const years = Array.from(allYearIds).flatMap((id) => {
+    const deletedAt = deletedMap.get(id)
     const l = localYearMap.get(id)
     const r = remoteYearMap.get(id)
-    if (l && r) return l.updatedAt >= r.updatedAt ? l : r
-    return (l ?? r)!
+    if (deletedAt && r && deletedAt >= r.updatedAt) return []
+    if (l && r) return [l.updatedAt >= r.updatedAt ? l : r]
+    return [(l ?? r)!]
   }).sort((a, b) => a.sortOrder - b.sortOrder)
 
   const localEntryMap = new Map(local.entries.map((e) => [e.id, e]))
   const remoteEntryMap = new Map(remote.entries.map((e) => [e.id, e]))
   const allEntryIds = new Set([...localEntryMap.keys(), ...remoteEntryMap.keys()])
-  const entries = Array.from(allEntryIds).map((id) => {
+  const entries = Array.from(allEntryIds).flatMap((id) => {
+    const deletedAt = deletedMap.get(id)
     const l = localEntryMap.get(id)
     const r = remoteEntryMap.get(id)
-    if (l && r) return l.updatedAt >= r.updatedAt ? l : r
-    return (l ?? r)!
+    if (deletedAt && r && deletedAt >= r.updatedAt) return []
+    if (l && r) return [l.updatedAt >= r.updatedAt ? l : r]
+    return [(l ?? r)!]
   })
   return { version: SCHEDULE_DATA_VERSION, years, entries }
 }

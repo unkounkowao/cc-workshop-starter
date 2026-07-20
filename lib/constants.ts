@@ -74,6 +74,7 @@ export const SCHEDULE_STORAGE_KEY = 'novel-schedule-data'
 export const SCHEDULE_DATA_VERSION = 1
 export const SCHEDULE_SELECTED_YEAR_KEY = 'novel-schedule-selected-year'
 export const SCHEDULE_VIEW_MODE_KEY = 'novel-schedule-view-mode'
+export const SCHEDULE_DELETED_IDS_KEY = 'novel-schedule-deleted-ids'
 
 export const DEFAULT_MONTH_NAMES = [
   '4月', '5月', '6月', '7月', '8月', '9月',
