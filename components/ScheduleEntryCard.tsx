@@ -1,24 +1,9 @@
 'use client'
 import Link from 'next/link'
-import type { ScheduleEntry, ScheduleEntryImportance } from '@/lib/types'
-import { SCHEDULE_IMPORTANCE_LABELS } from '@/lib/constants'
+import type { ScheduleEntry } from '@/lib/types'
 
 type Props = {
   entry: ScheduleEntry
-}
-
-function ImportanceDot({ importance }: { importance: ScheduleEntryImportance }) {
-  const colorMap: Record<ScheduleEntryImportance, string> = {
-    high: 'bg-red-400',
-    medium: 'bg-orange-400',
-    low: 'bg-slate-300',
-  }
-  return (
-    <span
-      className={`inline-block w-2 h-2 rounded-full shrink-0 ${colorMap[importance]}`}
-      aria-label={`重要度: ${SCHEDULE_IMPORTANCE_LABELS[importance]}`}
-    />
-  )
 }
 
 function buildDateString(entry: ScheduleEntry): string {
@@ -56,7 +41,6 @@ export default function ScheduleEntryCard({ entry }: Props) {
         className="flex items-center gap-2 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg group"
         aria-label={`${entry.title} の詳細を見る`}
       >
-        {entry.importance && <ImportanceDot importance={entry.importance} />}
         {dateString && (
           <span className="text-xs text-slate-400 shrink-0">{dateString}</span>
         )}
