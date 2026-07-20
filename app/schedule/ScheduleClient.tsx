@@ -22,7 +22,6 @@ import {
   SCHEDULE_SELECTED_YEAR_KEY,
   SCHEDULE_VIEW_MODE_KEY,
   DEFAULT_MONTH_NAMES,
-  SCHEDULE_IMPORTANCE_LABELS,
 } from '@/lib/constants'
 import { generateId, now } from '@/lib/utils'
 import type { StoryYear, ScheduleEntry, Character, Toast as ToastType, ScheduleImportMode } from '@/lib/types'
@@ -44,7 +43,6 @@ function YearFormModal({
   onClose: () => void
 }) {
   const [name, setName] = useState(year?.name ?? '')
-  const [description, setDescription] = useState(year?.description ?? '')
   const [monthNames, setMonthNames] = useState<string[]>(
     year ? year.months.map((m) => m.name) : [...DEFAULT_MONTH_NAMES]
   )
@@ -85,7 +83,7 @@ function YearFormModal({
     const savedYear: StoryYear = {
       id: year?.id ?? generateId(),
       name: name.trim(),
-      description: description.trim() || undefined,
+      description: undefined,
       months,
       sortOrder: year?.sortOrder ?? getNextYearSortOrder(),
       createdAt: year?.createdAt ?? now(),
@@ -136,20 +134,6 @@ function YearFormModal({
             {errors.name && (
               <p id="year-name-error" className="text-xs text-red-500 mt-1" role="alert">{errors.name}</p>
             )}
-          </div>
-
-          <div>
-            <label htmlFor="year-desc" className="block text-sm font-medium text-slate-700 mb-1">
-              説明（任意）
-            </label>
-            <textarea
-              id="year-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={2}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 resize-none"
-              placeholder="この年のメモや概要"
-            />
           </div>
 
           <div>
@@ -311,7 +295,6 @@ function BackupPanel({
 // ===== メインコンポーネント =====
 
 type ViewMode = 'timeline' | 'grid'
-type FilterType = 'all' | 'official' | 'plot'
 
 function addToast(
   setToasts: React.Dispatch<React.SetStateAction<ToastType[]>>,
@@ -327,11 +310,6 @@ export default function ScheduleClient() {
   const [years, setYears] = useState<StoryYear[]>([])
   const [selectedYearId, setSelectedYearId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<ViewMode>('timeline')
-  const [filterType, setFilterType] = useState<FilterType>('all')
-  const [filterMonth, setFilterMonth] = useState<string | null>(null)
-  const [filterImportance, setFilterImportance] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
   const [entries, setEntries] = useState<ScheduleEntry[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [showYearModal, setShowYearModal] = useState(false)
@@ -386,28 +364,11 @@ export default function ScheduleClient() {
     [years, selectedYearId]
   )
 
-  // フィルタリング済みエントリ
+  // 表示用エントリ（全件）
   const filteredEntries = useMemo(() => {
     if (!selectedYear) return []
-    return entries.filter((entry) => {
-      if (filterType !== 'all' && entry.type !== filterType) return false
-      if (filterMonth && entry.monthId !== filterMonth) return false
-      if (filterImportance && entry.importance !== filterImportance) return false
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase()
-        const charNames = entry.relatedCharacterIds
-          .map((id) => characters.find((c) => c.id === id)?.name ?? '')
-          .join(' ')
-        const searchable = [
-          entry.title, entry.summary, entry.details, entry.category,
-          entry.location, entry.plotRole, entry.cause, entry.result,
-          entry.foreshadowing, entry.payoff, charNames,
-        ].filter(Boolean).join(' ').toLowerCase()
-        if (!searchable.includes(q)) return false
-      }
-      return true
-    })
-  }, [entries, filterType, filterMonth, filterImportance, searchQuery, characters, selectedYear])
+    return entries
+  }, [entries, selectedYear])
 
   // 月別グループ
   const entriesByMonth = useMemo(() => {
@@ -423,7 +384,6 @@ export default function ScheduleClient() {
   // 年の選択変更
   const handleYearChange = (id: string) => {
     setSelectedYearId(id)
-    setFilterMonth(null)
   }
 
   // 年の保存（作成・編集）
@@ -640,20 +600,6 @@ export default function ScheduleClient() {
               </button>
             </div>
 
-            {/* フィルターボタン */}
-            <button
-              type="button"
-              onClick={() => setShowFilters((v) => !v)}
-              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
-                showFilters
-                  ? 'bg-sky-100 border-sky-300 text-sky-700'
-                  : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'
-              }`}
-              aria-expanded={showFilters}
-            >
-              フィルター {(filterType !== 'all' || filterMonth || filterImportance || searchQuery) ? '●' : ''}
-            </button>
-
             {/* 追加ボタン */}
             {selectedYear && (
               <>
@@ -681,90 +627,6 @@ export default function ScheduleClient() {
             </div>
           </div>
 
-          {/* フィルターパネル */}
-          {showFilters && (
-            <div className="bg-slate-50 rounded-xl p-3 space-y-3 border border-slate-200">
-              {/* 種別フィルター */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs text-slate-500 shrink-0">種別:</span>
-                {(['all', 'official', 'plot'] as const).map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setFilterType(t)}
-                    className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                      filterType === t
-                        ? 'bg-sky-500 text-white border-sky-500'
-                        : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
-                    }`}
-                    aria-pressed={filterType === t}
-                  >
-                    {t === 'all' ? 'すべて' : t === 'official' ? '公式' : 'プロット'}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-3 flex-wrap">
-                {/* 月フィルター */}
-                {selectedYear && (
-                  <div className="flex items-center gap-1">
-                    <label htmlFor="filter-month" className="text-xs text-slate-500 shrink-0">月:</label>
-                    <select
-                      id="filter-month"
-                      value={filterMonth ?? ''}
-                      onChange={(e) => setFilterMonth(e.target.value || null)}
-                      className="text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400"
-                    >
-                      <option value="">すべて</option>
-                      {selectedYear.months.map((m) => (
-                        <option key={m.id} value={m.id}>{m.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {/* 重要度フィルター */}
-                <div className="flex items-center gap-1">
-                  <label htmlFor="filter-importance" className="text-xs text-slate-500 shrink-0">重要度:</label>
-                  <select
-                    id="filter-importance"
-                    value={filterImportance ?? ''}
-                    onChange={(e) => setFilterImportance(e.target.value || null)}
-                    className="text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400"
-                  >
-                    <option value="">すべて</option>
-                    {Object.entries(SCHEDULE_IMPORTANCE_LABELS).map(([k, v]) => (
-                      <option key={k} value={k}>{v}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* 検索 */}
-              <div className="flex items-center gap-1">
-                <label htmlFor="filter-search" className="text-xs text-slate-500 shrink-0">検索:</label>
-                <input
-                  id="filter-search"
-                  type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="タイトル・概要・場所など"
-                  className="flex-1 text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400"
-                />
-              </div>
-
-              {/* フィルタークリア */}
-              {(filterType !== 'all' || filterMonth || filterImportance || searchQuery) && (
-                <button
-                  type="button"
-                  onClick={() => { setFilterType('all'); setFilterMonth(null); setFilterImportance(null); setSearchQuery('') }}
-                  className="text-xs text-red-500 hover:text-red-600 transition-colors"
-                >
-                  フィルターをリセット
-                </button>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
@@ -837,9 +699,7 @@ export default function ScheduleClient() {
 
                     {monthEntries.length === 0 ? (
                       <p className="text-xs text-slate-400 pl-2 py-2">
-                        {filterType !== 'all' || filterMonth || filterImportance || searchQuery
-                          ? '条件に一致するエントリがありません'
-                          : 'この月にエントリはありません'}
+                        この月にエントリはありません
                       </p>
                     ) : (
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
