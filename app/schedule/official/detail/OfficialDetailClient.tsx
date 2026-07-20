@@ -131,9 +131,6 @@ export default function OfficialDetailClient() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 space-y-3">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">
-                <span aria-hidden="true">📅</span> 公式スケジュール
-              </span>
               {entry.importance && (
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                   entry.importance === 'high'
