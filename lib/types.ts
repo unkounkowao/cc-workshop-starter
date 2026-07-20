@@ -77,7 +77,9 @@ export type WorldImageMetadata = {
   fileSize: number
   title?: string
   caption?: string
+  altText?: string
   category?: string
+  sourceNote?: string
   sortOrder: number
   createdAt: string
   updatedAt: string
@@ -102,4 +104,92 @@ export type WorldBackupManifest = {
     createdAt: string
     updatedAt: string
   }>
+}
+
+// ===== 年間スケジュール =====
+
+export type StoryMonth = {
+  id: string
+  name: string
+  monthNumber: number // 1-12
+}
+
+export type StoryYear = {
+  id: string
+  name: string
+  description?: string
+  months: StoryMonth[]
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type ScheduleEntryType = 'official' | 'plot'
+
+export type ScheduleEntryStatus = 'planned' | 'confirmed' | 'completed' | 'cancelled'
+
+export type ScheduleEntryImportance = 'low' | 'medium' | 'high'
+
+export type ScheduleEntry = {
+  id: string
+  yearId: string
+  monthId: string
+  type: ScheduleEntryType
+
+  title: string
+  summary?: string
+  details?: string
+
+  dateLabel?: string
+  startDay?: number
+  endDay?: number
+  timeLabel?: string
+
+  category?: string
+  location?: string
+
+  relatedCharacterIds: string[]
+
+  // official only
+  status?: ScheduleEntryStatus
+
+  importance?: ScheduleEntryImportance
+
+  // plot only
+  plotRole?: string
+  cause?: string
+  result?: string
+  foreshadowing?: string
+  payoff?: string
+
+  relatedEntryIds: string[]
+  relatedWorldImageIds: string[]
+
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type ScheduleData = {
+  version: number
+  years: StoryYear[]
+  entries: ScheduleEntry[]
+}
+
+export type ScheduleBackup = {
+  version: number
+  exportedAt: string
+  years: StoryYear[]
+  entries: ScheduleEntry[]
+}
+
+export type ScheduleImportMode = 'replace' | 'append'
+
+export type ScheduleImportResult = {
+  success: boolean
+  yearsImported: number
+  entriesImported: number
+  yearsSkipped: number
+  entriesSkipped: number
+  errors: string[]
 }

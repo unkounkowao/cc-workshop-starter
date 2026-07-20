@@ -1,0 +1,973 @@
+'use client'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import Link from 'next/link'
+import Toast from '@/components/Toast'
+import ConfirmDialog from '@/components/ConfirmDialog'
+import ScheduleEntryCard from '@/components/ScheduleEntryCard'
+import {
+  loadYears,
+  saveYear,
+  deleteYear,
+  updateYearSortOrders,
+  getNextYearSortOrder,
+  loadEntries,
+  deleteEntry,
+  updateEntrySortOrders,
+  sortEntriesInMonth,
+  countEntriesForYear,
+} from '@/lib/scheduleStorage'
+import { exportScheduleBackup, importScheduleBackup } from '@/lib/scheduleBackup'
+import { loadCharacters } from '@/lib/storage'
+import {
+  SCHEDULE_SELECTED_YEAR_KEY,
+  SCHEDULE_VIEW_MODE_KEY,
+  DEFAULT_MONTH_NAMES,
+  SCHEDULE_IMPORTANCE_LABELS,
+} from '@/lib/constants'
+import { generateId, now } from '@/lib/utils'
+import type { StoryYear, ScheduleEntry, Character, Toast as ToastType, ScheduleImportMode } from '@/lib/types'
+
+// ===== 年フォームモーダル =====
+
+type YearFormErrors = {
+  name?: string
+  months?: string[]
+}
+
+function YearFormModal({
+  year,
+  onSave,
+  onClose,
+}: {
+  year: StoryYear | null
+  onSave: (year: StoryYear) => void
+  onClose: () => void
+}) {
+  const [name, setName] = useState(year?.name ?? '')
+  const [description, setDescription] = useState(year?.description ?? '')
+  const [monthNames, setMonthNames] = useState<string[]>(
+    year ? year.months.map((m) => m.name) : [...DEFAULT_MONTH_NAMES]
+  )
+  const [errors, setErrors] = useState<YearFormErrors>({})
+
+  const handleMonthChange = (index: number, value: string) => {
+    setMonthNames((prev) => {
+      const next = [...prev]
+      next[index] = value
+      return next
+    })
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const newErrors: YearFormErrors = {}
+    if (!name.trim()) newErrors.name = '年の名前を入力してください'
+
+    const monthErrors: string[] = []
+    monthNames.forEach((mn, i) => {
+      if (!mn.trim()) monthErrors[i] = `${i + 1}番目の月名を入力してください`
+    })
+    if (monthErrors.some(Boolean)) newErrors.months = monthErrors
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
+      return
+    }
+
+    const months = year
+      ? year.months.map((m, i) => ({ ...m, name: monthNames[i] ?? m.name }))
+      : monthNames.map((mn, i) => ({
+          id: generateId(),
+          name: mn,
+          monthNumber: i + 1,
+        }))
+
+    const savedYear: StoryYear = {
+      id: year?.id ?? generateId(),
+      name: name.trim(),
+      description: description.trim() || undefined,
+      months,
+      sortOrder: year?.sortOrder ?? getNextYearSortOrder(),
+      createdAt: year?.createdAt ?? now(),
+      updatedAt: now(),
+    }
+    onSave(savedYear)
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-4"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="year-modal-title"
+      >
+        <div className="sticky top-0 bg-white z-10 flex items-center justify-between px-6 py-4 border-b border-slate-100 rounded-t-2xl">
+          <h2 id="year-modal-title" className="text-lg font-bold text-slate-800">
+            {year ? '年を編集' : '新しい年を追加'}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-slate-400 hover:text-slate-600 transition-colors text-2xl leading-none"
+            aria-label="閉じる"
+          >
+            ×
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label htmlFor="year-name" className="block text-sm font-medium text-slate-700 mb-1">
+              年の名前 <span className="text-red-500" aria-hidden="true">*</span>
+            </label>
+            <input
+              id="year-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
+              placeholder="例: 第1章 / 2024年 / 序章"
+              aria-describedby={errors.name ? 'year-name-error' : undefined}
+            />
+            {errors.name && (
+              <p id="year-name-error" className="text-xs text-red-500 mt-1" role="alert">{errors.name}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="year-desc" className="block text-sm font-medium text-slate-700 mb-1">
+              説明（任意）
+            </label>
+            <textarea
+              id="year-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400 resize-none"
+              placeholder="この年のメモや概要"
+            />
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-slate-700 mb-2">月の名前</p>
+            <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+              {monthNames.map((mn, i) => (
+                <div key={i}>
+                  <label htmlFor={`month-${i}`} className="text-xs text-slate-500 mb-0.5 block">
+                    {i + 1}番目の月
+                  </label>
+                  <input
+                    id={`month-${i}`}
+                    type="text"
+                    value={mn}
+                    onChange={(e) => handleMonthChange(i, e.target.value)}
+                    className="w-full border border-slate-200 rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400"
+                    aria-describedby={errors.months?.[i] ? `month-error-${i}` : undefined}
+                  />
+                  {errors.months?.[i] && (
+                    <p id={`month-error-${i}`} className="text-xs text-red-500 mt-0.5" role="alert">
+                      {errors.months[i]}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-end pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors min-h-[44px]"
+            >
+              キャンセル
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 text-sm font-medium text-white bg-sky-500 hover:bg-sky-600 rounded-lg transition-colors min-h-[44px]"
+            >
+              {year ? '更新する' : '追加する'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ===== バックアップパネル =====
+
+function BackupPanel({
+  onSuccess,
+  onError,
+}: {
+  onSuccess: (msg: string) => void
+  onError: (msg: string) => void
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [importMode, setImportMode] = useState<ScheduleImportMode>('append')
+  const [pendingData, setPendingData] = useState<unknown>(null)
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  const handleExport = () => {
+    try {
+      exportScheduleBackup()
+      onSuccess('バックアップをダウンロードしました')
+    } catch {
+      onError('バックアップの出力に失敗しました')
+    }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target?.result as string)
+        setPendingData(parsed)
+        setShowConfirm(true)
+      } catch {
+        onError('JSONの読み込みに失敗しました')
+      }
+    }
+    reader.readAsText(file)
+    e.target.value = ''
+  }
+
+  const handleImportConfirm = () => {
+    if (!pendingData) return
+    const result = importScheduleBackup(pendingData, importMode)
+    setShowConfirm(false)
+    setPendingData(null)
+    if (result.success) {
+      onSuccess(
+        `復元完了: 年 ${result.yearsImported}件、エントリ ${result.entriesImported}件をインポートしました`
+      )
+    } else {
+      onError(result.errors[0] ?? '復元に失敗しました')
+    }
+  }
+
+  return (
+    <>
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={handleExport}
+          className="px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          バックアップ
+        </button>
+        <div className="flex items-center gap-1">
+          <select
+            value={importMode}
+            onChange={(e) => setImportMode(e.target.value as ScheduleImportMode)}
+            className="text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400"
+            aria-label="インポートモード"
+          >
+            <option value="append">追加</option>
+            <option value="replace">置き換え</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            復元
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json"
+            onChange={handleFileChange}
+            className="sr-only"
+            aria-label="バックアップファイルを選択"
+          />
+        </div>
+      </div>
+
+      <ConfirmDialog
+        isOpen={showConfirm}
+        title="スケジュールを復元しますか？"
+        message={
+          importMode === 'replace'
+            ? '現在のスケジュールデータをすべて置き換えます。この操作は取り消せません。'
+            : '既存のデータに追加します。重複するIDは新しいIDで保存されます。'
+        }
+        confirmLabel="復元する"
+        onConfirm={handleImportConfirm}
+        onCancel={() => { setShowConfirm(false); setPendingData(null) }}
+        isDanger={importMode === 'replace'}
+      />
+    </>
+  )
+}
+
+// ===== メインコンポーネント =====
+
+type ViewMode = 'timeline' | 'grid'
+type FilterType = 'all' | 'official' | 'plot'
+
+function addToast(
+  setToasts: React.Dispatch<React.SetStateAction<ToastType[]>>,
+  message: string,
+  type: ToastType['type']
+) {
+  const id = generateId()
+  setToasts((prev) => [...prev, { id, message, type }])
+}
+
+export default function ScheduleClient() {
+  const [mounted, setMounted] = useState(false)
+  const [years, setYears] = useState<StoryYear[]>([])
+  const [selectedYearId, setSelectedYearId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>('timeline')
+  const [filterType, setFilterType] = useState<FilterType>('all')
+  const [filterMonth, setFilterMonth] = useState<string | null>(null)
+  const [filterImportance, setFilterImportance] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [entries, setEntries] = useState<ScheduleEntry[]>([])
+  const [characters, setCharacters] = useState<Character[]>([])
+  const [showYearModal, setShowYearModal] = useState(false)
+  const [editingYear, setEditingYear] = useState<StoryYear | null>(null)
+  const [deleteYearTarget, setDeleteYearTarget] = useState<StoryYear | null>(null)
+  const [deleteEntryTarget, setDeleteEntryTarget] = useState<ScheduleEntry | null>(null)
+  const [toasts, setToasts] = useState<ToastType[]>([])
+
+  const showSuccess = useCallback((msg: string) => addToast(setToasts, msg, 'success'), [])
+  const showError = useCallback((msg: string) => addToast(setToasts, msg, 'error'), [])
+
+  // マウント時にデータ読み込み
+  useEffect(() => {
+    setMounted(true)
+    const loadedYears = loadYears()
+    setYears(loadedYears)
+    setCharacters(loadCharacters())
+
+    const storedYearId = localStorage.getItem(SCHEDULE_SELECTED_YEAR_KEY)
+    const storedViewMode = localStorage.getItem(SCHEDULE_VIEW_MODE_KEY) as ViewMode | null
+
+    if (storedViewMode === 'grid' || storedViewMode === 'timeline') {
+      setViewMode(storedViewMode)
+    }
+
+    if (storedYearId && loadedYears.some((y) => y.id === storedYearId)) {
+      setSelectedYearId(storedYearId)
+    } else if (loadedYears.length > 0) {
+      setSelectedYearId(loadedYears[0].id)
+    }
+  }, [])
+
+  // selectedYearId 変更時にエントリを読み込み
+  useEffect(() => {
+    if (!mounted) return
+    if (selectedYearId) {
+      localStorage.setItem(SCHEDULE_SELECTED_YEAR_KEY, selectedYearId)
+      setEntries(loadEntries(selectedYearId))
+    } else {
+      setEntries([])
+    }
+  }, [selectedYearId, mounted])
+
+  // viewMode 変更時に保存
+  useEffect(() => {
+    if (!mounted) return
+    localStorage.setItem(SCHEDULE_VIEW_MODE_KEY, viewMode)
+  }, [viewMode, mounted])
+
+  const selectedYear = useMemo(
+    () => years.find((y) => y.id === selectedYearId) ?? null,
+    [years, selectedYearId]
+  )
+
+  // フィルタリング済みエントリ
+  const filteredEntries = useMemo(() => {
+    if (!selectedYear) return []
+    return entries.filter((entry) => {
+      if (filterType !== 'all' && entry.type !== filterType) return false
+      if (filterMonth && entry.monthId !== filterMonth) return false
+      if (filterImportance && entry.importance !== filterImportance) return false
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase()
+        const charNames = entry.relatedCharacterIds
+          .map((id) => characters.find((c) => c.id === id)?.name ?? '')
+          .join(' ')
+        const searchable = [
+          entry.title, entry.summary, entry.details, entry.category,
+          entry.location, entry.plotRole, entry.cause, entry.result,
+          entry.foreshadowing, entry.payoff, charNames,
+        ].filter(Boolean).join(' ').toLowerCase()
+        if (!searchable.includes(q)) return false
+      }
+      return true
+    })
+  }, [entries, filterType, filterMonth, filterImportance, searchQuery, characters, selectedYear])
+
+  // 月別グループ
+  const entriesByMonth = useMemo(() => {
+    if (!selectedYear) return {}
+    const map: Record<string, ScheduleEntry[]> = {}
+    selectedYear.months.forEach((m) => { map[m.id] = [] })
+    filteredEntries.forEach((e) => {
+      if (map[e.monthId] !== undefined) map[e.monthId].push(e)
+    })
+    return map
+  }, [selectedYear, filteredEntries])
+
+  // 年の選択変更
+  const handleYearChange = (id: string) => {
+    setSelectedYearId(id)
+    setFilterMonth(null)
+  }
+
+  // 年の保存（作成・編集）
+  const handleYearSave = (year: StoryYear) => {
+    saveYear(year)
+    const updated = loadYears()
+    setYears(updated)
+    if (!selectedYearId || selectedYearId === year.id) {
+      setSelectedYearId(year.id)
+    }
+    setShowYearModal(false)
+    setEditingYear(null)
+    showSuccess(editingYear ? '年を更新しました' : '年を追加しました')
+  }
+
+  // 年の削除実行
+  const handleYearDeleteConfirm = () => {
+    if (!deleteYearTarget) return
+    deleteYear(deleteYearTarget.id)
+    const updated = loadYears()
+    setYears(updated)
+    if (selectedYearId === deleteYearTarget.id) {
+      setSelectedYearId(updated.length > 0 ? updated[0].id : null)
+    }
+    setDeleteYearTarget(null)
+    showSuccess('年を削除しました')
+  }
+
+  // 年を上に移動
+  const handleYearMoveUp = (id: string) => {
+    const idx = years.findIndex((y) => y.id === id)
+    if (idx <= 0) return
+    const ids = years.map((y) => y.id)
+    ;[ids[idx - 1], ids[idx]] = [ids[idx], ids[idx - 1]]
+    updateYearSortOrders(ids)
+    setYears(loadYears())
+  }
+
+  // 年を下に移動
+  const handleYearMoveDown = (id: string) => {
+    const idx = years.findIndex((y) => y.id === id)
+    if (idx < 0 || idx >= years.length - 1) return
+    const ids = years.map((y) => y.id)
+    ;[ids[idx], ids[idx + 1]] = [ids[idx + 1], ids[idx]]
+    updateYearSortOrders(ids)
+    setYears(loadYears())
+  }
+
+  // エントリを上に移動
+  const handleEntryMoveUp = useCallback((id: string) => {
+    const entry = entries.find((e) => e.id === id)
+    if (!entry) return
+    const monthEntries = sortEntriesInMonth(
+      entries.filter((e) => e.monthId === entry.monthId && e.yearId === entry.yearId)
+    )
+    const idx = monthEntries.findIndex((e) => e.id === id)
+    if (idx <= 0) return
+    const ids = monthEntries.map((e) => e.id)
+    ;[ids[idx - 1], ids[idx]] = [ids[idx], ids[idx - 1]]
+    updateEntrySortOrders(ids)
+    setEntries(loadEntries(entry.yearId))
+  }, [entries])
+
+  // エントリを下に移動
+  const handleEntryMoveDown = useCallback((id: string) => {
+    const entry = entries.find((e) => e.id === id)
+    if (!entry) return
+    const monthEntries = sortEntriesInMonth(
+      entries.filter((e) => e.monthId === entry.monthId && e.yearId === entry.yearId)
+    )
+    const idx = monthEntries.findIndex((e) => e.id === id)
+    if (idx < 0 || idx >= monthEntries.length - 1) return
+    const ids = monthEntries.map((e) => e.id)
+    ;[ids[idx], ids[idx + 1]] = [ids[idx + 1], ids[idx]]
+    updateEntrySortOrders(ids)
+    setEntries(loadEntries(entry.yearId))
+  }, [entries])
+
+  // エントリ削除実行
+  const handleEntryDeleteConfirm = () => {
+    if (!deleteEntryTarget) return
+    deleteEntry(deleteEntryTarget.id)
+    if (selectedYearId) setEntries(loadEntries(selectedYearId))
+    setDeleteEntryTarget(null)
+    showSuccess('エントリを削除しました')
+  }
+
+  if (!mounted) return null
+
+  // ===== 空状態（年なし） =====
+  if (years.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-50 flex flex-col">
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="text-center space-y-4">
+            <div className="text-5xl" aria-hidden="true">📅</div>
+            <h1 className="text-2xl font-bold text-slate-800">年間スケジュール</h1>
+            <p className="text-slate-500 text-sm">最初の年を追加してスケジュールを作成しましょう</p>
+            <button
+              type="button"
+              onClick={() => { setEditingYear(null); setShowYearModal(true) }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white font-medium rounded-xl transition-colors"
+            >
+              + 年を追加する
+            </button>
+          </div>
+        </div>
+        {showYearModal && (
+          <YearFormModal
+            year={editingYear}
+            onSave={handleYearSave}
+            onClose={() => { setShowYearModal(false); setEditingYear(null) }}
+          />
+        )}
+        <Toast toasts={toasts} onRemove={(id) => setToasts((p) => p.filter((t) => t.id !== id))} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-50">
+      {/* ===== ツールバー ===== */}
+      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-3 space-y-2">
+          {/* 上段 */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* 年セレクタ */}
+            <select
+              value={selectedYearId ?? ''}
+              onChange={(e) => handleYearChange(e.target.value)}
+              className="flex-1 min-w-0 max-w-xs border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sky-400"
+              aria-label="表示する年を選択"
+            >
+              {years.map((y) => (
+                <option key={y.id} value={y.id}>{y.name}</option>
+              ))}
+            </select>
+
+            {/* 年管理ボタン群 */}
+            <button
+              type="button"
+              onClick={() => { setEditingYear(null); setShowYearModal(true) }}
+              className="px-3 py-1.5 text-xs text-sky-600 border border-sky-300 rounded-lg hover:bg-sky-50 transition-colors whitespace-nowrap"
+            >
+              + 年を追加
+            </button>
+            {selectedYear && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => { setEditingYear(selectedYear); setShowYearModal(true) }}
+                  className="px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                  aria-label={`${selectedYear.name} を編集`}
+                >
+                  編集
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleYearMoveUp(selectedYear.id)}
+                  disabled={years[0]?.id === selectedYear.id}
+                  className="px-2 py-1.5 text-xs text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  aria-label="年を前に移動"
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleYearMoveDown(selectedYear.id)}
+                  disabled={years[years.length - 1]?.id === selectedYear.id}
+                  className="px-2 py-1.5 text-xs text-slate-500 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  aria-label="年を後に移動"
+                >
+                  →
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDeleteYearTarget(selectedYear)}
+                  className="px-3 py-1.5 text-xs text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                  aria-label={`${selectedYear.name} を削除`}
+                >
+                  削除
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* 下段 */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* 表示切り替え */}
+            <div className="flex border border-slate-300 rounded-lg overflow-hidden" role="group" aria-label="表示モード">
+              <button
+                type="button"
+                onClick={() => setViewMode('timeline')}
+                className={`px-3 py-1.5 text-xs transition-colors ${
+                  viewMode === 'timeline'
+                    ? 'bg-sky-500 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+                aria-pressed={viewMode === 'timeline'}
+              >
+                タイムライン
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('grid')}
+                className={`px-3 py-1.5 text-xs transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-sky-500 text-white'
+                    : 'bg-white text-slate-600 hover:bg-slate-50'
+                }`}
+                aria-pressed={viewMode === 'grid'}
+              >
+                グリッド
+              </button>
+            </div>
+
+            {/* フィルターボタン */}
+            <button
+              type="button"
+              onClick={() => setShowFilters((v) => !v)}
+              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
+                showFilters
+                  ? 'bg-sky-100 border-sky-300 text-sky-700'
+                  : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'
+              }`}
+              aria-expanded={showFilters}
+            >
+              フィルター {(filterType !== 'all' || filterMonth || filterImportance || searchQuery) ? '●' : ''}
+            </button>
+
+            {/* 追加ボタン */}
+            {selectedYear && (
+              <>
+                <Link
+                  href={`/schedule/official/new?yearId=${selectedYear.id}`}
+                  className="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors whitespace-nowrap"
+                >
+                  + 公式スケジュール
+                </Link>
+                <Link
+                  href={`/schedule/plot/new?yearId=${selectedYear.id}`}
+                  className="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors whitespace-nowrap"
+                >
+                  + プロット・出来事
+                </Link>
+              </>
+            )}
+
+            {/* バックアップ */}
+            <div className="ml-auto">
+              <BackupPanel
+                onSuccess={(msg) => { showSuccess(msg); setYears(loadYears()); if (selectedYearId) setEntries(loadEntries(selectedYearId)) }}
+                onError={showError}
+              />
+            </div>
+          </div>
+
+          {/* フィルターパネル */}
+          {showFilters && (
+            <div className="bg-slate-50 rounded-xl p-3 space-y-3 border border-slate-200">
+              {/* 種別フィルター */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs text-slate-500 shrink-0">種別:</span>
+                {(['all', 'official', 'plot'] as const).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setFilterType(t)}
+                    className={`px-3 py-1 text-xs rounded-full border transition-colors ${
+                      filterType === t
+                        ? 'bg-sky-500 text-white border-sky-500'
+                        : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                    }`}
+                    aria-pressed={filterType === t}
+                  >
+                    {t === 'all' ? 'すべて' : t === 'official' ? '公式' : 'プロット'}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* 月フィルター */}
+                {selectedYear && (
+                  <div className="flex items-center gap-1">
+                    <label htmlFor="filter-month" className="text-xs text-slate-500 shrink-0">月:</label>
+                    <select
+                      id="filter-month"
+                      value={filterMonth ?? ''}
+                      onChange={(e) => setFilterMonth(e.target.value || null)}
+                      className="text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                    >
+                      <option value="">すべて</option>
+                      {selectedYear.months.map((m) => (
+                        <option key={m.id} value={m.id}>{m.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* 重要度フィルター */}
+                <div className="flex items-center gap-1">
+                  <label htmlFor="filter-importance" className="text-xs text-slate-500 shrink-0">重要度:</label>
+                  <select
+                    id="filter-importance"
+                    value={filterImportance ?? ''}
+                    onChange={(e) => setFilterImportance(e.target.value || null)}
+                    className="text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                  >
+                    <option value="">すべて</option>
+                    {Object.entries(SCHEDULE_IMPORTANCE_LABELS).map(([k, v]) => (
+                      <option key={k} value={k}>{v}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* 検索 */}
+              <div className="flex items-center gap-1">
+                <label htmlFor="filter-search" className="text-xs text-slate-500 shrink-0">検索:</label>
+                <input
+                  id="filter-search"
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="タイトル・概要・場所など"
+                  className="flex-1 text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                />
+              </div>
+
+              {/* フィルタークリア */}
+              {(filterType !== 'all' || filterMonth || filterImportance || searchQuery) && (
+                <button
+                  type="button"
+                  onClick={() => { setFilterType('all'); setFilterMonth(null); setFilterImportance(null); setSearchQuery('') }}
+                  className="text-xs text-red-500 hover:text-red-600 transition-colors"
+                >
+                  フィルターをリセット
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ===== コンテンツエリア ===== */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {!selectedYear ? (
+          <div className="text-center py-16">
+            <p className="text-slate-500">年を選択してください</p>
+          </div>
+        ) : entries.length === 0 ? (
+          /* 年は選択済みだがエントリなし */
+          <div className="text-center py-16 space-y-4">
+            <div className="text-4xl" aria-hidden="true">📝</div>
+            <p className="text-slate-500">このシナリオにはまだ予定がありません</p>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Link
+                href={`/schedule/official/new?yearId=${selectedYear.id}`}
+                className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
+              >
+                + 公式スケジュールを追加
+              </Link>
+              <Link
+                href={`/schedule/plot/new?yearId=${selectedYear.id}`}
+                className="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
+              >
+                + プロット・出来事を追加
+              </Link>
+            </div>
+          </div>
+        ) : viewMode === 'timeline' ? (
+          /* タイムラインビュー */
+          <div className="space-y-6">
+            {selectedYear.months.map((month) => {
+              const monthEntries = sortEntriesInMonth(entriesByMonth[month.id] ?? [])
+              return (
+                <section key={month.id} aria-labelledby={`month-${month.id}`}>
+                  <details open className="group">
+                    <summary
+                      id={`month-${month.id}`}
+                      className="flex items-center justify-between gap-2 cursor-pointer list-none select-none mb-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-base font-bold text-slate-700">
+                          {month.name}
+                          {monthEntries.length > 0 && (
+                            <span className="ml-2 text-xs font-normal text-slate-400">
+                              {monthEntries.length}件
+                            </span>
+                          )}
+                        </h2>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/schedule/official/new?yearId=${selectedYear.id}&monthId=${month.id}`}
+                          className="px-2.5 py-1 text-xs text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          + 公式
+                        </Link>
+                        <Link
+                          href={`/schedule/plot/new?yearId=${selectedYear.id}&monthId=${month.id}`}
+                          className="px-2.5 py-1 text-xs text-amber-600 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          + プロット
+                        </Link>
+                        <span className="text-slate-300 text-sm group-open:rotate-180 transition-transform" aria-hidden="true">▼</span>
+                      </div>
+                    </summary>
+
+                    {monthEntries.length === 0 ? (
+                      <p className="text-xs text-slate-400 pl-2 py-2">
+                        {filterType !== 'all' || filterMonth || filterImportance || searchQuery
+                          ? '条件に一致するエントリがありません'
+                          : 'この月にエントリはありません'}
+                      </p>
+                    ) : (
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {monthEntries.map((entry, i) => (
+                          <ScheduleEntryCard
+                            key={entry.id}
+                            entry={entry}
+                            characters={characters}
+                            index={i}
+                            total={monthEntries.length}
+                            onMoveUp={handleEntryMoveUp}
+                            onMoveDown={handleEntryMoveDown}
+                            onDelete={setDeleteEntryTarget}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </details>
+                  <hr className="border-slate-200 mt-4" />
+                </section>
+              )
+            })}
+          </div>
+        ) : (
+          /* グリッドビュー */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {selectedYear.months.map((month) => {
+              const monthEntries = sortEntriesInMonth(entriesByMonth[month.id] ?? [])
+              return (
+                <section
+                  key={month.id}
+                  className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
+                  aria-labelledby={`grid-month-${month.id}`}
+                >
+                  <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-100 flex items-center justify-between gap-1">
+                    <h2
+                      id={`grid-month-${month.id}`}
+                      className="text-sm font-bold text-slate-700 truncate"
+                    >
+                      {month.name}
+                    </h2>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Link
+                        href={`/schedule/official/new?yearId=${selectedYear.id}&monthId=${month.id}`}
+                        className="text-xs text-blue-600 hover:text-blue-700 px-1"
+                        aria-label={`${month.name}に公式スケジュールを追加`}
+                      >
+                        +公
+                      </Link>
+                      <Link
+                        href={`/schedule/plot/new?yearId=${selectedYear.id}&monthId=${month.id}`}
+                        className="text-xs text-amber-600 hover:text-amber-700 px-1"
+                        aria-label={`${month.name}にプロットを追加`}
+                      >
+                        +プ
+                      </Link>
+                    </div>
+                  </div>
+                  <div className="p-2 space-y-1.5 min-h-[80px]">
+                    {monthEntries.length === 0 ? (
+                      <p className="text-xs text-slate-300 text-center py-3">なし</p>
+                    ) : (
+                      monthEntries.map((entry) => {
+                        const href = entry.type === 'official'
+                          ? `/schedule/official/detail?id=${entry.id}`
+                          : `/schedule/plot/detail?id=${entry.id}`
+                        const badgeCls = entry.type === 'official'
+                          ? 'border-l-blue-400'
+                          : 'border-l-amber-400'
+                        return (
+                          <Link
+                            key={entry.id}
+                            href={href}
+                            className={`block px-2 py-1.5 bg-slate-50 hover:bg-sky-50 rounded-lg border border-slate-100 border-l-2 ${badgeCls} transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400`}
+                          >
+                            <p className="text-xs font-medium text-slate-700 line-clamp-1">{entry.title}</p>
+                            {entry.startDay !== undefined && (
+                              <p className="text-xs text-slate-400">{entry.startDay}日</p>
+                            )}
+                          </Link>
+                        )
+                      })
+                    )}
+                  </div>
+                </section>
+              )
+            })}
+          </div>
+        )}
+      </main>
+
+      {/* ===== モーダル・ダイアログ ===== */}
+      {showYearModal && (
+        <YearFormModal
+          year={editingYear}
+          onSave={handleYearSave}
+          onClose={() => { setShowYearModal(false); setEditingYear(null) }}
+        />
+      )}
+
+      <ConfirmDialog
+        isOpen={deleteYearTarget !== null}
+        title="年を削除しますか？"
+        message={
+          deleteYearTarget
+            ? `「${deleteYearTarget.name}」を削除します。この年に属するエントリ ${countEntriesForYear(deleteYearTarget.id)} 件もすべて削除されます。この操作は取り消せません。`
+            : ''
+        }
+        confirmLabel="削除する"
+        onConfirm={handleYearDeleteConfirm}
+        onCancel={() => setDeleteYearTarget(null)}
+        isDanger
+      />
+
+      <ConfirmDialog
+        isOpen={deleteEntryTarget !== null}
+        title="エントリを削除しますか？"
+        message={deleteEntryTarget ? `「${deleteEntryTarget.title}」を削除します。この操作は取り消せません。` : ''}
+        confirmLabel="削除する"
+        onConfirm={handleEntryDeleteConfirm}
+        onCancel={() => setDeleteEntryTarget(null)}
+        isDanger
+      />
+
+      <Toast
+        toasts={toasts}
+        onRemove={(id) => setToasts((p) => p.filter((t) => t.id !== id))}
+      />
+    </div>
+  )
+}

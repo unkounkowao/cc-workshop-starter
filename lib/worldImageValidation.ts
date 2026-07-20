@@ -55,7 +55,8 @@ export function filterAndSearch(
         img.title?.toLowerCase().includes(q) ||
         img.caption?.toLowerCase().includes(q) ||
         img.category?.toLowerCase().includes(q) ||
-        img.fileName.toLowerCase().includes(q)
+        img.fileName.toLowerCase().includes(q) ||
+        img.sourceNote?.toLowerCase().includes(q)
     )
   }
   return result

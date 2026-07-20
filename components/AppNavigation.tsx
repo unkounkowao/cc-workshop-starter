@@ -18,6 +18,7 @@ export default function AppNavigation() {
   const isCharacters = normalized === '/' || normalized.startsWith('/character')
   const isWorld = normalized.startsWith('/world')
   const isMemo = normalized.startsWith('/memo')
+  const isSchedule = normalized.startsWith('/schedule')
 
   const linkClass = (active: boolean) =>
     `px-4 py-1.5 text-sm font-medium rounded-full transition-all ${
@@ -30,12 +31,15 @@ export default function AppNavigation() {
     <nav className="bg-white border-b border-sky-100 sticky top-0 z-20">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <span className="text-sm font-bold text-sky-600 tracking-wide">Novel Sheet</span>
-        <div className="flex gap-1">
+        <div className="flex flex-wrap gap-1">
           <Link href="/" className={linkClass(isCharacters)}>
             登場人物
           </Link>
           <Link href="/world" className={linkClass(isWorld)}>
             世界観
+          </Link>
+          <Link href="/schedule" className={linkClass(isSchedule)}>
+            年間スケジュール
           </Link>
           <Link href="/memo" className={linkClass(isMemo)}>
             メモ

@@ -68,3 +68,44 @@ export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'im
 export const WORLD_DATA_VERSION = 1
 export const MAX_ZIP_FILES = 500
 export const MAX_ZIP_SIZE = 500 * 1024 * 1024 // 500MB
+
+// 年間スケジュール用定数
+export const SCHEDULE_STORAGE_KEY = 'novel-schedule-data'
+export const SCHEDULE_DATA_VERSION = 1
+export const SCHEDULE_SELECTED_YEAR_KEY = 'novel-schedule-selected-year'
+export const SCHEDULE_VIEW_MODE_KEY = 'novel-schedule-view-mode'
+
+export const DEFAULT_MONTH_NAMES = [
+  '1月', '2月', '3月', '4月', '5月', '6月',
+  '7月', '8月', '9月', '10月', '11月', '12月',
+]
+
+export const SCHEDULE_ENTRY_TYPE_LABELS: Record<string, string> = {
+  official: '公式スケジュール',
+  plot: 'プロット・出来事',
+}
+
+export const SCHEDULE_STATUS_LABELS: Record<string, string> = {
+  planned: '予定',
+  confirmed: '確定',
+  completed: '実施済み',
+  cancelled: '中止',
+}
+
+export const SCHEDULE_IMPORTANCE_LABELS: Record<string, string> = {
+  low: '低',
+  medium: '中',
+  high: '高',
+}
+
+export const PLOT_ROLE_SUGGESTIONS = [
+  '導入', '発端', '展開', '転換点', '障害', '対立', '危機',
+  'クライマックス', '解決', 'エピローグ', '伏線', '伏線回収',
+  'キャラクター成長', '関係性変化', '世界観説明',
+]
+
+export const DEFAULT_SCHEDULE_DATA = {
+  version: SCHEDULE_DATA_VERSION,
+  years: [] as import('./types').StoryYear[],
+  entries: [] as import('./types').ScheduleEntry[],
+}
