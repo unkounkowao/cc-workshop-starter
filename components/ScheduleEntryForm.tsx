@@ -415,7 +415,7 @@ export default function ScheduleEntryForm({
                 onChange={(e) => update('details', e.target.value)}
                 placeholder="詳しい内容・描写など"
                 className={textareaClass}
-                rows={5}
+                rows={type === 'plot' ? 16 : 5}
               />
             </div>
           </div>
@@ -442,25 +442,6 @@ export default function ScheduleEntryForm({
           </div>
         </section>
 
-        {/* ---- 伏線回収（plot のみ） ---- */}
-        {type === 'plot' && (
-          <section aria-labelledby="section-plot">
-            <h3 id="section-plot" className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-100 pb-1">
-              プロット情報
-            </h3>
-            <div>
-              <FieldLabel htmlFor="field-payoff">伏線回収</FieldLabel>
-              <textarea
-                id="field-payoff"
-                value={form.payoff}
-                onChange={(e) => update('payoff', e.target.value)}
-                placeholder="回収される伏線の内容"
-                className={textareaClass}
-                rows={3}
-              />
-            </div>
-          </section>
-        )}
 
         {/* 保存ボタン（下部にも配置） */}
         <div className="flex justify-end gap-3 pt-2 pb-6">
