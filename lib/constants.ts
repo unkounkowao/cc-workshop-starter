@@ -76,8 +76,8 @@ export const SCHEDULE_SELECTED_YEAR_KEY = 'novel-schedule-selected-year'
 export const SCHEDULE_VIEW_MODE_KEY = 'novel-schedule-view-mode'
 
 export const DEFAULT_MONTH_NAMES = [
-  '1月', '2月', '3月', '4月', '5月', '6月',
-  '7月', '8月', '9月', '10月', '11月', '12月',
+  '4月', '5月', '6月', '7月', '8月', '9月',
+  '10月', '11月', '12月', '1月', '2月', '3月',
 ]
 
 export const SCHEDULE_ENTRY_TYPE_LABELS: Record<string, string> = {

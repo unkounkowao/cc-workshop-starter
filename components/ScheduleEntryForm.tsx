@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useCallback, useEffect, useId } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import type { ScheduleEntry, ScheduleEntryType, StoryYear } from '@/lib/types'
 import { generateId, now } from '@/lib/utils'
 import {
@@ -10,12 +10,8 @@ import {
 import type { ScheduleEntryErrors } from '@/lib/scheduleValidation'
 import {
   SCHEDULE_ENTRY_TYPE_LABELS,
-  SCHEDULE_STATUS_LABELS,
   SCHEDULE_IMPORTANCE_LABELS,
-  PLOT_ROLE_SUGGESTIONS,
 } from '@/lib/constants'
-import RelatedCharacterSelector from './RelatedCharacterSelector'
-import RelatedEntrySelector from './RelatedEntrySelector'
 
 type Props = {
   type: ScheduleEntryType
@@ -167,9 +163,6 @@ export default function ScheduleEntryForm({
   )
   const [errors, setErrors] = useState<ScheduleEntryErrors>({})
   const [isDirty, setIsDirty] = useState(false)
-  const plotRoleListId = useId()
-
-  const isOfficial = type === 'official'
   const isEditing = !!initialEntry
 
   // 選択中の年オブジェクト
@@ -242,20 +235,10 @@ export default function ScheduleEntryForm({
       dateLabel: normalizeString(form.dateLabel),
       startDay: parseOptionalDay(form.startDay),
       endDay: parseOptionalDay(form.endDay),
-      timeLabel: normalizeString(form.timeLabel),
-      category: normalizeString(form.category),
-      location: normalizeString(form.location),
       importance: form.importance !== ''
         ? (form.importance as ScheduleEntry['importance'])
         : undefined,
-      status: isOfficial && form.status !== ''
-        ? (form.status as ScheduleEntry['status'])
-        : undefined,
-      plotRole: !isOfficial ? normalizeString(form.plotRole) : undefined,
-      cause: !isOfficial ? normalizeString(form.cause) : undefined,
-      result: !isOfficial ? normalizeString(form.result) : undefined,
-      foreshadowing: !isOfficial ? normalizeString(form.foreshadowing) : undefined,
-      payoff: !isOfficial ? normalizeString(form.payoff) : undefined,
+      payoff: type === 'plot' ? normalizeString(form.payoff) : undefined,
       relatedCharacterIds: form.relatedCharacterIds,
       relatedEntryIds: form.relatedEntryIds,
       relatedWorldImageIds: initialEntry?.relatedWorldImageIds ?? [],
@@ -264,7 +247,7 @@ export default function ScheduleEntryForm({
       updatedAt: ts,
     }
     return entry
-  }, [form, initialEntry, type, isOfficial])
+  }, [form, initialEntry, type])
 
   // 保存（詳細ページへ遷移）
   const handleSave = useCallback(() => {
@@ -401,18 +384,6 @@ export default function ScheduleEntryForm({
               </p>
             )}
 
-            {/* 時間ラベル */}
-            <div>
-              <FieldLabel htmlFor="field-timeLabel">時間ラベル</FieldLabel>
-              <input
-                id="field-timeLabel"
-                type="text"
-                value={form.timeLabel}
-                onChange={(e) => update('timeLabel', e.target.value)}
-                placeholder="例：夕暮れ、深夜"
-                className={inputClass}
-              />
-            </div>
           </div>
         </section>
 
@@ -450,187 +421,46 @@ export default function ScheduleEntryForm({
           </div>
         </section>
 
-        {/* ---- 分類セクション ---- */}
+        {/* ---- 重要度 ---- */}
         <section aria-labelledby="section-classify">
           <h3 id="section-classify" className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-100 pb-1">
-            分類・場所
+            分類
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* カテゴリ */}
-            <div>
-              <FieldLabel htmlFor="field-category">カテゴリ</FieldLabel>
-              <input
-                id="field-category"
-                type="text"
-                value={form.category}
-                onChange={(e) => update('category', e.target.value)}
-                placeholder="例：戦闘、日常、祭り"
-                className={inputClass}
-              />
-            </div>
-
-            {/* 場所 */}
-            <div>
-              <FieldLabel htmlFor="field-location">場所</FieldLabel>
-              <input
-                id="field-location"
-                type="text"
-                value={form.location}
-                onChange={(e) => update('location', e.target.value)}
-                placeholder="例：王都、森の奥"
-                className={inputClass}
-              />
-            </div>
-
-            {/* 重要度 */}
-            <div>
-              <FieldLabel htmlFor="field-importance">重要度</FieldLabel>
-              <select
-                id="field-importance"
-                value={form.importance}
-                onChange={(e) => update('importance', e.target.value)}
-                className={selectClass}
-              >
-                <option value="">未設定</option>
-                {Object.entries(SCHEDULE_IMPORTANCE_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* ステータス（official のみ） */}
-            {isOfficial && (
-              <div>
-                <FieldLabel htmlFor="field-status">ステータス</FieldLabel>
-                <select
-                  id="field-status"
-                  value={form.status}
-                  onChange={(e) => update('status', e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="">未設定</option>
-                  {Object.entries(SCHEDULE_STATUS_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-              </div>
-            )}
+          <div className="max-w-xs">
+            <FieldLabel htmlFor="field-importance">重要度</FieldLabel>
+            <select
+              id="field-importance"
+              value={form.importance}
+              onChange={(e) => update('importance', e.target.value)}
+              className={selectClass}
+            >
+              <option value="">未設定</option>
+              {Object.entries(SCHEDULE_IMPORTANCE_LABELS).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
           </div>
         </section>
 
-        {/* ---- プロット情報セクション（plot のみ） ---- */}
-        {!isOfficial && (
+        {/* ---- 伏線回収（plot のみ） ---- */}
+        {type === 'plot' && (
           <section aria-labelledby="section-plot">
             <h3 id="section-plot" className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-100 pb-1">
               プロット情報
             </h3>
-            <div className="space-y-4">
-              {/* プロット役割 */}
-              <div>
-                <FieldLabel htmlFor="field-plotRole">プロット役割</FieldLabel>
-                <input
-                  id="field-plotRole"
-                  type="text"
-                  list={plotRoleListId}
-                  value={form.plotRole}
-                  onChange={(e) => update('plotRole', e.target.value)}
-                  placeholder="例：転換点、伏線"
-                  className={inputClass}
-                />
-                <datalist id={plotRoleListId}>
-                  {PLOT_ROLE_SUGGESTIONS.map((s) => (
-                    <option key={s} value={s} />
-                  ))}
-                </datalist>
-              </div>
-
-              {/* 原因・きっかけ */}
-              <div>
-                <FieldLabel htmlFor="field-cause">原因・きっかけ</FieldLabel>
-                <textarea
-                  id="field-cause"
-                  value={form.cause}
-                  onChange={(e) => update('cause', e.target.value)}
-                  placeholder="このイベントが起こった原因"
-                  className={textareaClass}
-                  rows={3}
-                />
-              </div>
-
-              {/* 結果・影響 */}
-              <div>
-                <FieldLabel htmlFor="field-result">結果・影響</FieldLabel>
-                <textarea
-                  id="field-result"
-                  value={form.result}
-                  onChange={(e) => update('result', e.target.value)}
-                  placeholder="このイベントが及ぼした結果や影響"
-                  className={textareaClass}
-                  rows={3}
-                />
-              </div>
-
-              {/* 伏線・予兆 */}
-              <div>
-                <FieldLabel htmlFor="field-foreshadowing">伏線・予兆</FieldLabel>
-                <textarea
-                  id="field-foreshadowing"
-                  value={form.foreshadowing}
-                  onChange={(e) => update('foreshadowing', e.target.value)}
-                  placeholder="この出来事に関連する伏線"
-                  className={textareaClass}
-                  rows={3}
-                />
-              </div>
-
-              {/* 伏線回収 */}
-              <div>
-                <FieldLabel htmlFor="field-payoff">伏線回収</FieldLabel>
-                <textarea
-                  id="field-payoff"
-                  value={form.payoff}
-                  onChange={(e) => update('payoff', e.target.value)}
-                  placeholder="回収される伏線の内容"
-                  className={textareaClass}
-                  rows={3}
-                />
-              </div>
+            <div>
+              <FieldLabel htmlFor="field-payoff">伏線回収</FieldLabel>
+              <textarea
+                id="field-payoff"
+                value={form.payoff}
+                onChange={(e) => update('payoff', e.target.value)}
+                placeholder="回収される伏線の内容"
+                className={textareaClass}
+                rows={3}
+              />
             </div>
           </section>
         )}
-
-        {/* ---- 関連セクション ---- */}
-        <section aria-labelledby="section-relations">
-          <h3 id="section-relations" className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4 border-b border-slate-100 pb-1">
-            関連情報
-          </h3>
-          <div className="space-y-6">
-            {/* 関連キャラクター */}
-            <RelatedCharacterSelector
-              selectedIds={form.relatedCharacterIds}
-              onChange={(ids) => update('relatedCharacterIds', ids)}
-              label="関連キャラクター"
-            />
-
-            {/* 関連項目（年が選択されている場合のみ） */}
-            {form.yearId && (
-              <div>
-                {errors.relatedEntryIds && (
-                  <p className="mb-1 text-xs text-red-600" role="alert">
-                    {errors.relatedEntryIds}
-                  </p>
-                )}
-                <RelatedEntrySelector
-                  currentEntryId={initialEntry?.id}
-                  yearId={form.yearId}
-                  selectedIds={form.relatedEntryIds}
-                  onChange={(ids) => update('relatedEntryIds', ids)}
-                  label="関連項目"
-                />
-              </div>
-            )}
-          </div>
-        </section>
 
         {/* 保存ボタン（下部にも配置） */}
         <div className="flex justify-end gap-3 pt-2 pb-6">
