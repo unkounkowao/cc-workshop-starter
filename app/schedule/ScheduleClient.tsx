@@ -330,6 +330,7 @@ export default function ScheduleClient() {
       {/* ===== ヒーローバナー ===== */}
       <div className="bg-gradient-to-br from-sky-400 to-sky-600 px-4 py-6 text-white">
         <div className="max-w-7xl mx-auto">
+          <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
           <h1 className="text-3xl font-bold tracking-tight">カレンダー</h1>
         </div>
       </div>
