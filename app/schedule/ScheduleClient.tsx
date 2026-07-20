@@ -15,13 +15,12 @@ import {
   sortEntriesInMonth,
   countEntriesForYear,
 } from '@/lib/scheduleStorage'
-import { exportScheduleBackup, importScheduleBackup } from '@/lib/scheduleBackup'
 import {
   SCHEDULE_SELECTED_YEAR_KEY,
   DEFAULT_MONTH_NAMES,
 } from '@/lib/constants'
 import { generateId, now } from '@/lib/utils'
-import type { StoryYear, ScheduleEntry, ScheduleData, Toast as ToastType, ScheduleImportMode } from '@/lib/types'
+import type { StoryYear, ScheduleEntry, ScheduleData, Toast as ToastType } from '@/lib/types'
 
 // ===== 年フォームモーダル =====
 
@@ -177,115 +176,6 @@ function YearFormModal({
         </form>
       </div>
     </div>
-  )
-}
-
-// ===== バックアップパネル =====
-
-function BackupPanel({
-  onSuccess,
-  onError,
-}: {
-  onSuccess: (msg: string) => void
-  onError: (msg: string) => void
-}) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [importMode, setImportMode] = useState<ScheduleImportMode>('append')
-  const [pendingData, setPendingData] = useState<unknown>(null)
-  const [showConfirm, setShowConfirm] = useState(false)
-
-  const handleExport = () => {
-    try {
-      exportScheduleBackup()
-      onSuccess('バックアップをダウンロードしました')
-    } catch {
-      onError('バックアップの出力に失敗しました')
-    }
-  }
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      try {
-        const parsed = JSON.parse(ev.target?.result as string)
-        setPendingData(parsed)
-        setShowConfirm(true)
-      } catch {
-        onError('JSONの読み込みに失敗しました')
-      }
-    }
-    reader.readAsText(file)
-    e.target.value = ''
-  }
-
-  const handleImportConfirm = () => {
-    if (!pendingData) return
-    const result = importScheduleBackup(pendingData, importMode)
-    setShowConfirm(false)
-    setPendingData(null)
-    if (result.success) {
-      onSuccess(
-        `復元完了: 年 ${result.yearsImported}件、エントリ ${result.entriesImported}件をインポートしました`
-      )
-    } else {
-      onError(result.errors[0] ?? '復元に失敗しました')
-    }
-  }
-
-  return (
-    <>
-      <div className="flex items-center gap-2 flex-wrap">
-        <button
-          type="button"
-          onClick={handleExport}
-          className="px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-        >
-          バックアップ
-        </button>
-        <div className="flex items-center gap-1">
-          <select
-            value={importMode}
-            onChange={(e) => setImportMode(e.target.value as ScheduleImportMode)}
-            className="text-xs border border-slate-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-400"
-            aria-label="インポートモード"
-          >
-            <option value="append">追加</option>
-            <option value="replace">置き換え</option>
-          </select>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="px-3 py-1.5 text-xs text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            復元
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/json"
-            onChange={handleFileChange}
-            className="sr-only"
-            aria-label="バックアップファイルを選択"
-          />
-        </div>
-      </div>
-
-      <ConfirmDialog
-        isOpen={showConfirm}
-        title="スケジュールを復元しますか？"
-        message={
-          importMode === 'replace'
-            ? '現在のスケジュールデータをすべて置き換えます。この操作は取り消せません。'
-            : '既存のデータに追加します。重複するIDは新しいIDで保存されます。'
-        }
-        confirmLabel="復元する"
-        onConfirm={handleImportConfirm}
-        onCancel={() => { setShowConfirm(false); setPendingData(null) }}
-        isDanger={importMode === 'replace'}
-      />
-    </>
   )
 }
 
@@ -484,10 +374,6 @@ export default function ScheduleClient() {
                 data={scheduleData}
                 onSynced={reloadAll}
                 onToast={(msg, type) => addToast(setToasts, msg, type)}
-              />
-              <BackupPanel
-                onSuccess={(msg) => { showSuccess(msg); reloadAll() }}
-                onError={showError}
               />
             </div>
           </div>
