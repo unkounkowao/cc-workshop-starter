@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import ScheduleEntryCard from '@/components/ScheduleEntryCard'
 import type { ScheduleEntry } from '@/lib/types'
-import type { Character } from '@/lib/types'
 
 // next/link モック
 vi.mock('next/link', () => ({
@@ -52,8 +51,6 @@ function makePlotEntry(overrides: Partial<ScheduleEntry> = {}): ScheduleEntry {
   }
 }
 
-const mockCharacters: Character[] = []
-
 beforeEach(() => {
   vi.clearAllMocks()
 })
@@ -63,7 +60,7 @@ describe('ScheduleEntryCard - officialタイプ', () => {
     render(
       <ScheduleEntryCard
         entry={makeOfficialEntry()}
-        characters={mockCharacters}
+
       />
     )
     expect(screen.getByText('公式イベント')).toBeInTheDocument()
@@ -73,7 +70,7 @@ describe('ScheduleEntryCard - officialタイプ', () => {
     render(
       <ScheduleEntryCard
         entry={makeOfficialEntry()}
-        characters={mockCharacters}
+
       />
     )
     const link = screen.getByRole('link')
@@ -86,7 +83,7 @@ describe('ScheduleEntryCard - plotタイプ', () => {
     render(
       <ScheduleEntryCard
         entry={makePlotEntry()}
-        characters={mockCharacters}
+
       />
     )
     expect(screen.getByText('プロットイベント')).toBeInTheDocument()
@@ -96,7 +93,7 @@ describe('ScheduleEntryCard - plotタイプ', () => {
     render(
       <ScheduleEntryCard
         entry={makePlotEntry()}
-        characters={mockCharacters}
+
       />
     )
     const link = screen.getByRole('link')
@@ -110,7 +107,7 @@ describe('ScheduleEntryCard - 空フィールドの非表示', () => {
     render(
       <ScheduleEntryCard
         entry={entry}
-        characters={mockCharacters}
+
       />
     )
     expect(document.querySelector('p.line-clamp-2')).toBeNull()
@@ -121,7 +118,7 @@ describe('ScheduleEntryCard - 空フィールドの非表示', () => {
     render(
       <ScheduleEntryCard
         entry={entry}
-        characters={mockCharacters}
+
       />
     )
     expect(screen.queryByRole('group', { name: '関連キャラクター' })).toBeNull()

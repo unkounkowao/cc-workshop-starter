@@ -15,13 +15,12 @@ import {
   countEntriesForYear,
 } from '@/lib/scheduleStorage'
 import { exportScheduleBackup, importScheduleBackup } from '@/lib/scheduleBackup'
-import { loadCharacters } from '@/lib/storage'
 import {
   SCHEDULE_SELECTED_YEAR_KEY,
   DEFAULT_MONTH_NAMES,
 } from '@/lib/constants'
 import { generateId, now } from '@/lib/utils'
-import type { StoryYear, ScheduleEntry, Character, Toast as ToastType, ScheduleImportMode } from '@/lib/types'
+import type { StoryYear, ScheduleEntry, Toast as ToastType, ScheduleImportMode } from '@/lib/types'
 
 // ===== 年フォームモーダル =====
 
@@ -305,7 +304,6 @@ export default function ScheduleClient() {
   const [years, setYears] = useState<StoryYear[]>([])
   const [selectedYearId, setSelectedYearId] = useState<string | null>(null)
   const [entries, setEntries] = useState<ScheduleEntry[]>([])
-  const [characters, setCharacters] = useState<Character[]>([])
   const [showYearModal, setShowYearModal] = useState(false)
   const [editingYear, setEditingYear] = useState<StoryYear | null>(null)
   const [deleteYearTarget, setDeleteYearTarget] = useState<StoryYear | null>(null)
@@ -319,7 +317,6 @@ export default function ScheduleClient() {
     setMounted(true)
     const loadedYears = loadYears()
     setYears(loadedYears)
-    setCharacters(loadCharacters())
 
     const storedYearId = localStorage.getItem(SCHEDULE_SELECTED_YEAR_KEY)
     if (storedYearId && loadedYears.some((y) => y.id === storedYearId)) {
@@ -554,7 +551,6 @@ export default function ScheduleClient() {
                           <ScheduleEntryCard
                             key={entry.id}
                             entry={entry}
-                            characters={characters}
                           />
                         ))}
                       </div>

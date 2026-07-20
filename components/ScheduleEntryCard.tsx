@@ -1,12 +1,10 @@
 'use client'
 import Link from 'next/link'
 import type { ScheduleEntry, ScheduleEntryImportance } from '@/lib/types'
-import type { Character } from '@/lib/types'
-import { SCHEDULE_STATUS_LABELS, SCHEDULE_IMPORTANCE_LABELS } from '@/lib/constants'
+import { SCHEDULE_IMPORTANCE_LABELS } from '@/lib/constants'
 
 type Props = {
   entry: ScheduleEntry
-  characters: Character[]
 }
 
 function ImportanceDot({ importance }: { importance: ScheduleEntryImportance }) {
@@ -39,7 +37,7 @@ function buildDateString(entry: ScheduleEntry): string {
   return parts.join(' ')
 }
 
-export default function ScheduleEntryCard({ entry, characters }: Props) {
+export default function ScheduleEntryCard({ entry }: Props) {
   const isOfficial = entry.type === 'official'
   const detailHref = isOfficial
     ? `/schedule/official/detail?id=${entry.id}`
@@ -49,69 +47,22 @@ export default function ScheduleEntryCard({ entry, characters }: Props) {
 
   const dateString = buildDateString(entry)
 
-  const relatedCharacters = entry.relatedCharacterIds
-    .map((id) => characters.find((c) => c.id === id))
-    .filter((c): c is Character => c !== undefined)
-
-  const visibleChars = relatedCharacters.slice(0, 3)
-  const hiddenCount = relatedCharacters.length - visibleChars.length
-
   return (
     <div
-      className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-slate-100 border-l-4 ${borderColor}`}
+      className={`bg-white rounded-lg border border-slate-100 border-l-4 ${borderColor} hover:shadow-sm transition-shadow`}
     >
       <Link
         href={detailHref}
-        className="block p-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-xl group"
+        className="flex items-center gap-2 px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 rounded-lg group"
         aria-label={`${entry.title} の詳細を見る`}
       >
-        {/* 重要度ドット + ステータス */}
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2">
-            {entry.importance && <ImportanceDot importance={entry.importance} />}
-          </div>
-          {isOfficial && entry.status && (
-            <span className="text-xs text-slate-400 shrink-0">
-              {SCHEDULE_STATUS_LABELS[entry.status]}
-            </span>
-          )}
-        </div>
-
-        {/* 日付 */}
+        {entry.importance && <ImportanceDot importance={entry.importance} />}
         {dateString && (
-          <p className="text-xs text-slate-500 mb-1">{dateString}</p>
+          <span className="text-xs text-slate-400 shrink-0">{dateString}</span>
         )}
-
-        {/* タイトル */}
-        <h3 className="font-bold text-slate-800 group-hover:text-sky-600 transition-colors text-sm leading-snug mb-1 line-clamp-2">
+        <span className="text-sm text-slate-800 group-hover:text-sky-600 transition-colors truncate font-medium">
           {entry.title}
-        </h3>
-
-        {/* 概要 */}
-        {entry.summary && (
-          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-2">
-            {entry.summary}
-          </p>
-        )}
-
-        {/* 関連キャラクター */}
-        {visibleChars.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2" aria-label="関連キャラクター">
-            {visibleChars.map((c) => (
-              <span
-                key={c.id}
-                className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full"
-              >
-                {c.name}
-              </span>
-            ))}
-            {hiddenCount > 0 && (
-              <span className="text-xs text-slate-400 px-1">
-                +{hiddenCount}人
-              </span>
-            )}
-          </div>
-        )}
+        </span>
       </Link>
     </div>
   )
