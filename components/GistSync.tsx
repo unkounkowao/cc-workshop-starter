@@ -1,8 +1,9 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { saveToGist, loadFromGist, saveScheduleToGist, loadScheduleFromGist } from '@/lib/gist'
+import { saveToGist, loadFromGist, saveScheduleToGist, loadScheduleFromGist, saveMemoToGist, loadMemoFromGist } from '@/lib/gist'
 import { loadData, saveData } from '@/lib/storage'
 import { loadScheduleData, saveScheduleData } from '@/lib/scheduleStorage'
+import { loadMemoData, saveMemoData, MEMO_DELETED_IDS_KEY, MEMO_VERSION } from '@/lib/memoStorage'
 import { DATA_VERSION, DELETED_IDS_KEY, SCHEDULE_DATA_VERSION, SCHEDULE_DELETED_IDS_KEY } from '@/lib/constants'
 
 const TOKEN_KEY = 'novel-cs-gist-token'
@@ -43,13 +44,35 @@ function mergeSchedule(
   return { version: SCHEDULE_DATA_VERSION, years, entries }
 }
 
+// メモデータのマージ
+function mergeMemo(
+  local: ReturnType<typeof loadMemoData>,
+  remote: ReturnType<typeof loadMemoData>
+) {
+  const deletedRaw = localStorage.getItem(MEMO_DELETED_IDS_KEY)
+  const deletedList: { id: string; deletedAt: string }[] = deletedRaw ? JSON.parse(deletedRaw) : []
+  const deletedMap = new Map(deletedList.map((d) => [d.id, d.deletedAt]))
+
+  const localMap = new Map(local.memos.map((m) => [m.id, m]))
+  const remoteMap = new Map(remote.memos.map((m) => [m.id, m]))
+  const allIds = new Set([...localMap.keys(), ...remoteMap.keys()])
+  const memos = Array.from(allIds).flatMap((id) => {
+    const deletedAt = deletedMap.get(id)
+    const l = localMap.get(id)
+    const r = remoteMap.get(id)
+    if (deletedAt && r && deletedAt >= r.updatedAt) return []
+    if (l && r) return [l.updatedAt >= r.updatedAt ? l : r]
+    return [(l ?? r)!]
+  })
+  return { version: MEMO_VERSION, memos }
+}
+
 export default function GistSync() {
   const [open, setOpen] = useState(false)
   const [token, setToken] = useState('')
   const [gistId, setGistId] = useState('')
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<{ msg: string; ok: boolean } | null>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const getCredentials = () => ({
@@ -63,13 +86,18 @@ export default function GistSync() {
     statusTimerRef.current = setTimeout(() => setStatus(null), 3000)
   }
 
-  const autoSave = () => {
+  // 保存（直列実行で競合防止）
+  const autoSave = async () => {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
-    saveToGist(savedToken, savedGistId, loadData()).catch(() => {})
-    saveScheduleToGist(savedToken, savedGistId, loadScheduleData()).catch(() => {})
+    try {
+      await saveToGist(savedToken, savedGistId, loadData())
+      await saveScheduleToGist(savedToken, savedGistId, loadScheduleData())
+      await saveMemoToGist(savedToken, savedGistId, loadMemoData())
+    } catch { /* ignore */ }
   }
 
+  // 読み込み（各データを独立して並列取得、マージはそれぞれ）
   const autoLoad = () => {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
@@ -120,6 +148,22 @@ export default function GistSync() {
         }
       })
       .catch(() => {})
+
+    // メモデータ
+    loadMemoFromGist(savedToken, savedGistId)
+      .then((remote) => {
+        if (!remote) return
+        const local = loadMemoData()
+        const merged = mergeMemo(local, remote)
+        const hasChange =
+          merged.memos.length !== local.memos.length ||
+          merged.memos.some((m) => { const l = local.memos.find((x) => x.id === m.id); return !l || l.updatedAt !== m.updatedAt })
+        if (hasChange) {
+          saveMemoData(merged)
+          window.dispatchEvent(new CustomEvent('gist-synced'))
+        }
+      })
+      .catch(() => {})
   }
 
   useEffect(() => {
@@ -128,8 +172,6 @@ export default function GistSync() {
       if (document.visibilityState === 'visible') {
         autoLoad()
       } else {
-        if (timerRef.current) clearTimeout(timerRef.current)
-        timerRef.current = null
         autoSave()
       }
     }
@@ -153,6 +195,7 @@ export default function GistSync() {
     try {
       const newId = await saveToGist(token.trim(), gistId.trim() || null, loadData())
       await saveScheduleToGist(token.trim(), newId, loadScheduleData())
+      await saveMemoToGist(token.trim(), newId, loadMemoData())
       setGistId(newId)
       localStorage.setItem(TOKEN_KEY, token.trim())
       localStorage.setItem(GIST_ID_KEY, newId)
@@ -175,8 +218,10 @@ export default function GistSync() {
       localStorage.setItem(GIST_ID_KEY, gistId.trim())
       const gistData = await loadFromGist(token.trim(), gistId.trim())
       saveData({ ...gistData, version: DATA_VERSION }, false)
-      const remote = await loadScheduleFromGist(token.trim(), gistId.trim())
-      if (remote) saveScheduleData(mergeSchedule(loadScheduleData(), remote))
+      const remoteSchedule = await loadScheduleFromGist(token.trim(), gistId.trim())
+      if (remoteSchedule) saveScheduleData(mergeSchedule(loadScheduleData(), remoteSchedule))
+      const remoteMemo = await loadMemoFromGist(token.trim(), gistId.trim())
+      if (remoteMemo) saveMemoData(mergeMemo(loadMemoData(), remoteMemo))
       window.dispatchEvent(new CustomEvent('gist-synced'))
       showStatus('Gistから読み込みました', true)
       setOpen(false)
@@ -197,7 +242,6 @@ export default function GistSync() {
         ☁
       </button>
 
-      {/* インライン状態通知 */}
       {status && (
         <span className={`text-xs px-2 ${status.ok ? 'text-green-600' : 'text-red-500'}`}>
           {status.ok ? '✓' : '✗'} {status.msg}
@@ -221,7 +265,7 @@ export default function GistSync() {
                 クロスデバイス同期
               </h2>
               <p className="text-xs text-slate-500 mb-5 leading-relaxed">
-                GitHub Gist を使ってデバイス間でデータを共有します。キャラクターとカレンダーをまとめて同期します。
+                GitHub Gist を使ってデバイス間でデータを共有します。キャラクター・カレンダー・メモをまとめて同期します。
                 設定済みの場合はページを開くと自動読み込み、タブを閉じると自動保存します。
               </p>
 
