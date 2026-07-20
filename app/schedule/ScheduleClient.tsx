@@ -302,7 +302,7 @@ export default function ScheduleClient() {
         <div className="flex-1 flex items-center justify-center p-8">
           <div className="text-center space-y-4">
             <div className="text-5xl" aria-hidden="true">📅</div>
-            <h1 className="text-2xl font-bold text-slate-800">カレンダー</h1>
+            <h1 className="text-2xl font-bold text-slate-800">カレンダーを始めましょう</h1>
             <p className="text-slate-500 text-sm">最初の年を追加してスケジュールを作成しましょう</p>
             <button
               type="button"
@@ -327,6 +327,13 @@ export default function ScheduleClient() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-50">
+      {/* ===== ヒーローバナー ===== */}
+      <div className="bg-gradient-to-br from-sky-400 to-sky-600 px-4 py-6 text-white">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold tracking-tight">カレンダー</h1>
+        </div>
+      </div>
+
       {/* ===== ツールバー ===== */}
       <div className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-3 py-2">
@@ -393,7 +400,7 @@ export default function ScheduleClient() {
               </Link>
               <Link
                 href={`/schedule/plot/new?yearId=${selectedYear.id}`}
-                className="px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
               >
                 + 出来事を追加
               </Link>
@@ -425,7 +432,7 @@ export default function ScheduleClient() {
                         </Link>
                         <Link
                           href={`/schedule/plot/new?yearId=${selectedYear.id}&monthId=${month.id}`}
-                          className="px-2.5 py-1 text-xs text-amber-600 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
+                          className="px-2.5 py-1 text-xs text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50 transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
                           + 出来事

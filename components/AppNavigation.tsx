@@ -30,22 +30,22 @@ export default function AppNavigation() {
 
   return (
     <nav className="bg-white border-b border-sky-100 sticky top-0 z-20">
-      <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between gap-2">
-        <div className="flex flex-wrap gap-1">
-          <Link href="/" className={linkClass(isCharacters)}>
-            登場人物
-          </Link>
-          <Link href="/world" className={linkClass(isWorld)}>
-            世界観
-          </Link>
-          <Link href="/schedule" className={linkClass(isSchedule)}>
-            カレンダー
-          </Link>
-          <Link href="/memo" className={linkClass(isMemo)}>
-            メモ
-          </Link>
+      <div className="max-w-6xl mx-auto px-2 py-2 flex items-center gap-1 overflow-x-auto">
+        <Link href="/" className={linkClass(isCharacters)}>
+          登場人物
+        </Link>
+        <Link href="/world" className={linkClass(isWorld)}>
+          世界観
+        </Link>
+        <Link href="/schedule" className={linkClass(isSchedule)}>
+          カレンダー
+        </Link>
+        <Link href="/memo" className={linkClass(isMemo)}>
+          メモ
+        </Link>
+        <div className="ml-auto shrink-0">
+          <GistSync />
         </div>
-        <GistSync />
       </div>
     </nav>
   )

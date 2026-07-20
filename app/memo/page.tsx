@@ -224,7 +224,7 @@ export default function MemoPage() {
         </div>
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 py-4 space-y-2">
+      <main className="max-w-3xl mx-auto px-4 py-4 pb-48 space-y-2">
         {memos.length === 0 && (
           <div className="text-center py-12">
             <div className="text-3xl mb-2">📓</div>
@@ -245,9 +245,11 @@ export default function MemoPage() {
             onDelete={(id) => setDeleteTarget(id)}
           />
         ))}
+      </main>
 
-        {/* 入力フォーム */}
-        <div className="bg-white rounded-xl border border-sky-100 shadow-sm p-3 mt-4">
+      {/* 入力フォーム（固定） */}
+      <div className="sticky bottom-0 bg-white border-t border-sky-100 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="max-w-3xl mx-auto px-4 py-3">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -290,7 +292,7 @@ export default function MemoPage() {
             </button>
           </div>
         </div>
-      </main>
+      </div>
 
       <Toast toasts={toasts} onRemove={removeToast} />
       <ConfirmDialog

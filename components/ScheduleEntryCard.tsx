@@ -28,7 +28,7 @@ export default function ScheduleEntryCard({ entry }: Props) {
     ? `/schedule/official/detail?id=${entry.id}`
     : `/schedule/plot/detail?id=${entry.id}`
 
-  const borderColor = isOfficial ? 'border-l-blue-400' : 'border-l-amber-400'
+  const borderColor = isOfficial ? 'border-l-blue-400' : 'border-l-rose-400'
 
   const dateString = buildDateString(entry)
 

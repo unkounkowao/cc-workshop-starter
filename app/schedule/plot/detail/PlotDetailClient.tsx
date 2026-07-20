@@ -71,7 +71,7 @@ export default function PlotDetailClient() {
 
   if (notFound || !entry) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-amber-50 flex items-center justify-center p-8">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-rose-50 flex items-center justify-center p-8">
         <div className="text-center space-y-4">
           <p className="text-slate-500 text-lg">エントリが見つかりません</p>
           <Link href="/schedule" className="text-sky-600 hover:underline text-sm">
@@ -112,7 +112,7 @@ export default function PlotDetailClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-rose-50">
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* ブレッドクラム */}
         <nav aria-label="パンくずリスト">
@@ -140,7 +140,7 @@ export default function PlotDetailClient() {
                 </span>
               )}
               {entry.plotRole && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-200">
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200">
                   {entry.plotRole}
                 </span>
               )}
@@ -188,8 +188,8 @@ export default function PlotDetailClient() {
 
             {/* プロット固有フィールド */}
             {(entry.cause || entry.result || entry.foreshadowing || entry.payoff) && (
-              <div className="bg-amber-50 rounded-xl shadow-sm border border-amber-100 p-5">
-                <h2 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-4">出来事の詳細</h2>
+              <div className="bg-rose-50 rounded-xl shadow-sm border border-rose-100 p-5">
+                <h2 className="text-xs font-semibold text-rose-700 uppercase tracking-wide mb-4">出来事の詳細</h2>
                 <dl className="space-y-4">
                   {entry.cause && <DetailField label="原因・きっかけ" value={entry.cause} />}
                   {entry.result && <DetailField label="結果・影響" value={entry.result} />}
@@ -266,19 +266,19 @@ export default function PlotDetailClient() {
           {prevEntry ? (
             <Link
               href={`/schedule/plot/detail?id=${prevEntry.id}`}
-              className="flex-1 flex flex-col items-start gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-amber-200 hover:shadow-md transition-all group max-w-xs"
+              className="flex-1 flex flex-col items-start gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-rose-200 hover:shadow-md transition-all group max-w-xs"
             >
-              <span className="text-xs text-slate-400 group-hover:text-amber-500 transition-colors">← 前へ</span>
-              <span className="text-sm font-medium text-slate-700 group-hover:text-amber-700 transition-colors line-clamp-1">{prevEntry.title}</span>
+              <span className="text-xs text-slate-400 group-hover:text-rose-500 transition-colors">← 前へ</span>
+              <span className="text-sm font-medium text-slate-700 group-hover:text-rose-700 transition-colors line-clamp-1">{prevEntry.title}</span>
             </Link>
           ) : <div className="flex-1 max-w-xs" />}
           {nextEntry ? (
             <Link
               href={`/schedule/plot/detail?id=${nextEntry.id}`}
-              className="flex-1 flex flex-col items-end gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-amber-200 hover:shadow-md transition-all group max-w-xs"
+              className="flex-1 flex flex-col items-end gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-rose-200 hover:shadow-md transition-all group max-w-xs"
             >
-              <span className="text-xs text-slate-400 group-hover:text-amber-500 transition-colors">次へ →</span>
-              <span className="text-sm font-medium text-slate-700 group-hover:text-amber-700 transition-colors line-clamp-1">{nextEntry.title}</span>
+              <span className="text-xs text-slate-400 group-hover:text-rose-500 transition-colors">次へ →</span>
+              <span className="text-sm font-medium text-slate-700 group-hover:text-rose-700 transition-colors line-clamp-1">{nextEntry.title}</span>
             </Link>
           ) : <div className="flex-1 max-w-xs" />}
         </nav>

@@ -82,7 +82,7 @@ export const DEFAULT_MONTH_NAMES = [
 
 export const SCHEDULE_ENTRY_TYPE_LABELS: Record<string, string> = {
   official: '公式スケジュール',
-  plot: 'プロット・出来事',
+  plot: '出来事',
 }
 
 export const SCHEDULE_STATUS_LABELS: Record<string, string> = {
