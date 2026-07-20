@@ -129,7 +129,7 @@ describe('ScheduleEntryCard - plotタイプ', () => {
         onMoveDown={vi.fn()}
       />
     )
-    expect(screen.getByText('プロット・出来事')).toBeInTheDocument()
+    expect(screen.getByText('出来事')).toBeInTheDocument()
   })
 
   it('詳細リンクが /schedule/plot/detail?id=entry-2 に設定される', () => {

@@ -129,7 +129,7 @@ export default function PlotDetailClient() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">
-                <span aria-hidden="true">✏️</span> プロット・出来事
+                <span aria-hidden="true">✏️</span> 出来事
               </span>
               {entry.importance && (
                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
@@ -180,19 +180,19 @@ export default function PlotDetailClient() {
           <div className="lg:col-span-2 space-y-4">
             {entry.summary && (
               <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <dl><DetailField label="概要" value={entry.summary} /></dl>
+                <dl><DetailField label="イベント概要" value={entry.summary} /></dl>
               </div>
             )}
             {entry.details && (
               <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <dl><DetailField label="詳細" value={entry.details} /></dl>
+                <dl><DetailField label="出来事" value={entry.details} /></dl>
               </div>
             )}
 
             {/* プロット固有フィールド */}
             {(entry.cause || entry.result || entry.foreshadowing || entry.payoff) && (
               <div className="bg-amber-50 rounded-xl shadow-sm border border-amber-100 p-5">
-                <h2 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-4">プロット情報</h2>
+                <h2 className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-4">出来事の詳細</h2>
                 <dl className="space-y-4">
                   {entry.cause && <DetailField label="原因・きっかけ" value={entry.cause} />}
                   {entry.result && <DetailField label="結果・影響" value={entry.result} />}

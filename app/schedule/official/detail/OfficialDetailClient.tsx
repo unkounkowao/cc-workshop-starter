@@ -183,12 +183,12 @@ export default function OfficialDetailClient() {
           <div className="lg:col-span-2 space-y-4">
             {entry.summary && (
               <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <dl><DetailField label="概要" value={entry.summary} /></dl>
+                <dl><DetailField label="イベント概要" value={entry.summary} /></dl>
               </div>
             )}
             {entry.details && (
               <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <dl><DetailField label="詳細" value={entry.details} /></dl>
+                <dl><DetailField label="出来事" value={entry.details} /></dl>
               </div>
             )}
             {relatedCharacters.length > 0 && (
