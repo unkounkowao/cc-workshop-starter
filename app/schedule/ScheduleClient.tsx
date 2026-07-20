@@ -394,13 +394,13 @@ export default function ScheduleClient() {
             <div className="flex items-center justify-center gap-3 flex-wrap">
               <Link
                 href={`/schedule/official/new?yearId=${selectedYear.id}`}
-                className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-[#217dff] bg-[#217dff]/10 border border-[#217dff]/30 rounded-xl hover:bg-[#217dff]/20 transition-colors"
               >
                 + 公式スケジュールを追加
               </Link>
               <Link
                 href={`/schedule/plot/new?yearId=${selectedYear.id}`}
-                className="px-4 py-2 text-sm font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-[#21ecff] bg-[#21ecff]/10 border border-[#21ecff]/30 rounded-xl hover:bg-[#21ecff]/20 transition-colors"
               >
                 + 出来事を追加
               </Link>
@@ -425,14 +425,14 @@ export default function ScheduleClient() {
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/schedule/official/new?yearId=${selectedYear.id}&monthId=${month.id}`}
-                          className="px-2.5 py-1 text-xs text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+                          className="px-2.5 py-1 text-xs text-[#217dff] border border-[#217dff]/30 rounded-lg hover:bg-[#217dff]/10 transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
                           + 公式
                         </Link>
                         <Link
                           href={`/schedule/plot/new?yearId=${selectedYear.id}&monthId=${month.id}`}
-                          className="px-2.5 py-1 text-xs text-rose-600 border border-rose-200 rounded-lg hover:bg-rose-50 transition-colors"
+                          className="px-2.5 py-1 text-xs text-[#21ecff] border border-[#21ecff]/30 rounded-lg hover:bg-[#21ecff]/10 transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
                           + 出来事

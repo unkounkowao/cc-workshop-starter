@@ -254,19 +254,19 @@ export default function OfficialDetailClient() {
           {prevEntry ? (
             <Link
               href={`/schedule/official/detail?id=${prevEntry.id}`}
-              className="flex-1 flex flex-col items-start gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all group max-w-xs"
+              className="flex-1 flex flex-col items-start gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-[#217dff]/40 hover:shadow-md transition-all group max-w-xs"
             >
-              <span className="text-xs text-slate-400 group-hover:text-sky-500 transition-colors">← 前へ</span>
-              <span className="text-sm font-medium text-slate-700 group-hover:text-sky-700 transition-colors line-clamp-1">{prevEntry.title}</span>
+              <span className="text-xs text-slate-400 group-hover:text-[#217dff] transition-colors">← 前へ</span>
+              <span className="text-sm font-medium text-slate-700 group-hover:text-[#217dff] transition-colors line-clamp-1">{prevEntry.title}</span>
             </Link>
           ) : <div className="flex-1 max-w-xs" />}
           {nextEntry ? (
             <Link
               href={`/schedule/official/detail?id=${nextEntry.id}`}
-              className="flex-1 flex flex-col items-end gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-sky-200 hover:shadow-md transition-all group max-w-xs"
+              className="flex-1 flex flex-col items-end gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-[#217dff]/40 hover:shadow-md transition-all group max-w-xs"
             >
-              <span className="text-xs text-slate-400 group-hover:text-sky-500 transition-colors">次へ →</span>
-              <span className="text-sm font-medium text-slate-700 group-hover:text-sky-700 transition-colors line-clamp-1">{nextEntry.title}</span>
+              <span className="text-xs text-slate-400 group-hover:text-[#217dff] transition-colors">次へ →</span>
+              <span className="text-sm font-medium text-slate-700 group-hover:text-[#217dff] transition-colors line-clamp-1">{nextEntry.title}</span>
             </Link>
           ) : <div className="flex-1 max-w-xs" />}
         </nav>
