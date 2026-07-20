@@ -4,7 +4,6 @@ import Link from 'next/link'
 import Toast from '@/components/Toast'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import ScheduleEntryCard from '@/components/ScheduleEntryCard'
-import ScheduleGistSync from '@/components/ScheduleGistSync'
 import {
   loadYears,
   saveYear,
@@ -20,7 +19,7 @@ import {
   DEFAULT_MONTH_NAMES,
 } from '@/lib/constants'
 import { generateId, now } from '@/lib/utils'
-import type { StoryYear, ScheduleEntry, ScheduleData, Toast as ToastType } from '@/lib/types'
+import type { StoryYear, ScheduleEntry, Toast as ToastType } from '@/lib/types'
 
 // ===== 年フォームモーダル =====
 
@@ -200,12 +199,6 @@ export default function ScheduleClient() {
   const [deleteYearTarget, setDeleteYearTarget] = useState<StoryYear | null>(null)
   const [toasts, setToasts] = useState<ToastType[]>([])
 
-  const scheduleData: ScheduleData = useMemo(
-    () => ({ version: 1, years, entries: loadEntries() }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [years, entries]
-  )
-
   const reloadAll = useCallback(() => {
     const updatedYears = loadYears()
     setYears(updatedYears)
@@ -214,6 +207,13 @@ export default function ScheduleClient() {
 
   const showSuccess = useCallback((msg: string) => addToast(setToasts, msg, 'success'), [])
   const showError = useCallback((msg: string) => addToast(setToasts, msg, 'error'), [])
+
+  // gist-synced イベントでリロード
+  useEffect(() => {
+    const onSync = () => reloadAll()
+    window.addEventListener('gist-synced', onSync)
+    return () => window.removeEventListener('gist-synced', onSync)
+  }, [reloadAll])
 
   // マウント時にデータ読み込み
   useEffect(() => {
@@ -369,13 +369,6 @@ export default function ScheduleClient() {
               </>
             )}
 
-            <div className="ml-auto flex items-center gap-1.5 shrink-0">
-              <ScheduleGistSync
-                data={scheduleData}
-                onSynced={reloadAll}
-                onToast={(msg, type) => addToast(setToasts, msg, type)}
-              />
-            </div>
           </div>
         </div>
       </div>

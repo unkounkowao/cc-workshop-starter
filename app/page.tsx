@@ -1,12 +1,10 @@
 'use client'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { loadCharacters, deleteCharacter, updateSortOrders } from '@/lib/storage'
 import { generateId } from '@/lib/utils'
-import { DATA_VERSION } from '@/lib/constants'
-import type { Character, CharacterSheetData, Toast as ToastType } from '@/lib/types'
+import type { Character, Toast as ToastType } from '@/lib/types'
 import CharacterCard from '@/components/CharacterCard'
-import GistSync from '@/components/GistSync'
 import Toast from '@/components/Toast'
 import ConfirmDialog from '@/components/ConfirmDialog'
 
@@ -19,6 +17,9 @@ export default function HomePage() {
   useEffect(() => {
     setMounted(true)
     setCharacters(loadCharacters())
+    const onSync = () => setCharacters(loadCharacters())
+    window.addEventListener('gist-synced', onSync)
+    return () => window.removeEventListener('gist-synced', onSync)
   }, [])
 
   const addToast = useCallback((message: string, type: ToastType['type'] = 'success') => {
@@ -62,11 +63,6 @@ export default function HomePage() {
     setDeleteTarget(null)
   }, [deleteTarget, addToast])
 
-  const allData = useMemo<CharacterSheetData>(
-    () => ({ version: DATA_VERSION, characters }),
-    [characters]
-  )
-
   if (!mounted) return null
 
   return (
@@ -79,7 +75,6 @@ export default function HomePage() {
             <h1 className="text-3xl font-bold tracking-tight">登場人物</h1>
           </div>
           <div className="flex items-center gap-2">
-            <GistSync data={allData} onSynced={() => setCharacters(loadCharacters())} onToast={addToast} />
             <Link
               href="/characters/new"
               className="px-5 py-2.5 text-sm font-medium text-sky-700 bg-white hover:bg-sky-50 rounded-full transition-colors shadow-sm"

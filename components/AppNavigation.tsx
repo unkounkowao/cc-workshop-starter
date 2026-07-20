@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import GistSync from '@/components/GistSync'
 
 const basePath = '/cc-workshop-starter'
 
@@ -29,7 +30,7 @@ export default function AppNavigation() {
 
   return (
     <nav className="bg-white border-b border-sky-100 sticky top-0 z-20">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center">
+      <div className="max-w-6xl mx-auto px-4 py-2 flex items-center justify-between gap-2">
         <div className="flex flex-wrap gap-1">
           <Link href="/" className={linkClass(isCharacters)}>
             登場人物
@@ -44,6 +45,7 @@ export default function AppNavigation() {
             メモ
           </Link>
         </div>
+        <GistSync />
       </div>
     </nav>
   )

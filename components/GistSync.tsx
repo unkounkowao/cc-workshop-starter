@@ -1,89 +1,119 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { saveToGist, loadFromGist } from '@/lib/gist'
+import { saveToGist, loadFromGist, saveScheduleToGist, loadScheduleFromGist } from '@/lib/gist'
 import { loadData, saveData } from '@/lib/storage'
-import { DATA_VERSION, DELETED_IDS_KEY } from '@/lib/constants'
-import type { CharacterSheetData } from '@/lib/types'
+import { loadScheduleData, saveScheduleData } from '@/lib/scheduleStorage'
+import { DATA_VERSION, DELETED_IDS_KEY, SCHEDULE_DATA_VERSION } from '@/lib/constants'
 
 const TOKEN_KEY = 'novel-cs-gist-token'
 const GIST_ID_KEY = 'novel-cs-gist-id'
 
-type Props = {
-  data: CharacterSheetData
-  onSynced: () => void
-  onToast: (msg: string, type: 'success' | 'error' | 'warning') => void
+// スケジュールデータのマージ
+function mergeSchedule(
+  local: ReturnType<typeof loadScheduleData>,
+  remote: ReturnType<typeof loadScheduleData>
+) {
+  const localYearMap = new Map(local.years.map((y) => [y.id, y]))
+  const remoteYearMap = new Map(remote.years.map((y) => [y.id, y]))
+  const allYearIds = new Set([...localYearMap.keys(), ...remoteYearMap.keys()])
+  const years = Array.from(allYearIds).map((id) => {
+    const l = localYearMap.get(id)
+    const r = remoteYearMap.get(id)
+    if (l && r) return l.updatedAt >= r.updatedAt ? l : r
+    return (l ?? r)!
+  }).sort((a, b) => a.sortOrder - b.sortOrder)
+
+  const localEntryMap = new Map(local.entries.map((e) => [e.id, e]))
+  const remoteEntryMap = new Map(remote.entries.map((e) => [e.id, e]))
+  const allEntryIds = new Set([...localEntryMap.keys(), ...remoteEntryMap.keys()])
+  const entries = Array.from(allEntryIds).map((id) => {
+    const l = localEntryMap.get(id)
+    const r = remoteEntryMap.get(id)
+    if (l && r) return l.updatedAt >= r.updatedAt ? l : r
+    return (l ?? r)!
+  })
+  return { version: SCHEDULE_DATA_VERSION, years, entries }
 }
 
-export default function GistSync({ data, onSynced, onToast }: Props) {
+export default function GistSync() {
   const [open, setOpen] = useState(false)
   const [token, setToken] = useState('')
   const [gistId, setGistId] = useState('')
   const [loading, setLoading] = useState(false)
-  const dataRef = useRef(data)
+  const [status, setStatus] = useState<{ msg: string; ok: boolean } | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  // dataRefを常に最新に保つ
-  useEffect(() => {
-    dataRef.current = data
-  }, [data])
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const getCredentials = () => ({
     savedToken: localStorage.getItem(TOKEN_KEY) ?? '',
     savedGistId: localStorage.getItem(GIST_ID_KEY) ?? '',
   })
 
+  const showStatus = (msg: string, ok: boolean) => {
+    setStatus({ msg, ok })
+    if (statusTimerRef.current) clearTimeout(statusTimerRef.current)
+    statusTimerRef.current = setTimeout(() => setStatus(null), 3000)
+  }
+
   const autoSave = () => {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
-    saveToGist(savedToken, savedGistId, dataRef.current).catch(() => {})
+    saveToGist(savedToken, savedGistId, loadData()).catch(() => {})
+    saveScheduleToGist(savedToken, savedGistId, loadScheduleData()).catch(() => {})
   }
 
   const autoLoad = () => {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
 
+    // キャラクターデータ
     loadFromGist(savedToken, savedGistId)
       .then((gistData) => {
         const localData = loadData()
-
-        // 削除済みIDを取得
         const deletedRaw = localStorage.getItem(DELETED_IDS_KEY)
         const deletedList: { id: string; deletedAt: string }[] = deletedRaw ? JSON.parse(deletedRaw) : []
-        const deletedMap = new Map(deletedList.map(d => [d.id, d.deletedAt]))
-
-        // キャラクターをIDでマップ化
-        const localMap = new Map(localData.characters.map(c => [c.id, c]))
-        const gistMap = new Map(gistData.characters.map(c => [c.id, c]))
-
-        // マージ: 両方にあれば新しい方を採用、片方だけにあれば採用
-        // ただし削除済みIDはGistにあっても復元しない
+        const deletedMap = new Map(deletedList.map((d) => [d.id, d.deletedAt]))
+        const localMap = new Map(localData.characters.map((c) => [c.id, c]))
+        const gistMap = new Map(gistData.characters.map((c) => [c.id, c]))
         const allIds = new Set([...localMap.keys(), ...gistMap.keys()])
-        const merged = Array.from(allIds).flatMap(id => {
+        const merged = Array.from(allIds).flatMap((id) => {
           const deletedAt = deletedMap.get(id)
           const local = localMap.get(id)
           const gist = gistMap.get(id)
-          // 削除済み かつ 削除日時がGistの更新日時より新しければスキップ
           if (deletedAt && gist && deletedAt >= gist.updatedAt) return []
           if (local && gist) return [local.updatedAt >= gist.updatedAt ? local : gist]
           if (local) return [local]
           return [gist!]
         })
+        const hasChange =
+          merged.some((c) => { const l = localMap.get(c.id); return !l || l.updatedAt !== c.updatedAt }) ||
+          merged.length !== localData.characters.length
+        if (hasChange) {
+          saveData({ version: DATA_VERSION, characters: merged }, false)
+          window.dispatchEvent(new CustomEvent('gist-synced'))
+        }
+      })
+      .catch(() => {})
 
-        // 変化がなければスキップ
-        const hasChange = merged.some(c => {
-          const local = localMap.get(c.id)
-          return !local || local.updatedAt !== c.updatedAt
-        }) || merged.length !== localData.characters.length
-
-        if (!hasChange) return
-
-        saveData({ version: DATA_VERSION, characters: merged }, false)
-        onSynced()
+    // スケジュールデータ
+    loadScheduleFromGist(savedToken, savedGistId)
+      .then((remote) => {
+        if (!remote) return
+        const local = loadScheduleData()
+        const merged = mergeSchedule(local, remote)
+        const hasChange =
+          merged.years.length !== local.years.length ||
+          merged.entries.length !== local.entries.length ||
+          merged.years.some((y) => { const l = local.years.find((x) => x.id === y.id); return !l || l.updatedAt !== y.updatedAt }) ||
+          merged.entries.some((e) => { const l = local.entries.find((x) => x.id === e.id); return !l || l.updatedAt !== e.updatedAt })
+        if (hasChange) {
+          saveScheduleData(merged)
+          window.dispatchEvent(new CustomEvent('gist-synced'))
+        }
       })
       .catch(() => {})
   }
 
-  // 起動時・タブがアクティブ時・30秒ごとに読み込み、非アクティブ時に即時保存
   useEffect(() => {
     autoLoad()
     const onVisibility = () => {
@@ -96,82 +126,54 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
       }
     }
     document.addEventListener('visibilitychange', onVisibility)
-    const pollInterval = setInterval(autoLoad, 30000)
+    const poll = setInterval(autoLoad, 30000)
     return () => {
       document.removeEventListener('visibilitychange', onVisibility)
-      clearInterval(pollInterval)
+      clearInterval(poll)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // データ変更時に3秒後に自動保存
-  useEffect(() => {
-    const { savedToken, savedGistId } = getCredentials()
-    if (!savedToken || !savedGistId) return
-
-    if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => {
-      timerRef.current = null
-      autoSave()
-    }, 3000)
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
 
   useEffect(() => {
     setToken(localStorage.getItem(TOKEN_KEY) ?? '')
     setGistId(localStorage.getItem(GIST_ID_KEY) ?? '')
   }, [open])
 
-  const saveSettings = () => {
-    localStorage.setItem(TOKEN_KEY, token.trim())
-    localStorage.setItem(GIST_ID_KEY, gistId.trim())
-  }
-
   const handleSave = async () => {
-    if (!token.trim()) {
-      onToast('Personal Access Tokenを入力してください', 'error')
-      return
-    }
+    if (!token.trim()) { showStatus('Personal Access Tokenを入力してください', false); return }
     setLoading(true)
     try {
-      const currentData = loadData()
-      const newId = await saveToGist(token.trim(), gistId.trim() || null, currentData)
+      const newId = await saveToGist(token.trim(), gistId.trim() || null, loadData())
+      await saveScheduleToGist(token.trim(), newId, loadScheduleData())
       setGistId(newId)
       localStorage.setItem(TOKEN_KEY, token.trim())
       localStorage.setItem(GIST_ID_KEY, newId)
-      onToast('Gistにデータを保存しました', 'success')
+      showStatus('Gistに保存しました', true)
       setOpen(false)
     } catch (e) {
-      onToast(e instanceof Error ? e.message : 'Gist保存に失敗しました', 'error')
+      showStatus(e instanceof Error ? e.message : 'Gist保存に失敗しました', false)
     } finally {
       setLoading(false)
     }
   }
 
   const handleLoad = async () => {
-    if (!token.trim()) {
-      onToast('Personal Access Tokenを入力してください', 'error')
-      return
-    }
-    if (!gistId.trim()) {
-      onToast('Gist IDを入力してください', 'error')
-      return
-    }
-    if (!window.confirm('現在のデータをGistのデータで上書きします。よいですか？')) return
+    if (!token.trim()) { showStatus('Personal Access Tokenを入力してください', false); return }
+    if (!gistId.trim()) { showStatus('Gist IDを入力してください', false); return }
+    if (!window.confirm('Gistのデータと現在のデータをマージします。よいですか？')) return
     setLoading(true)
     try {
-      saveSettings()
-      const loaded: CharacterSheetData = await loadFromGist(token.trim(), gistId.trim())
-      saveData({ ...loaded, version: DATA_VERSION }, false)
-      onSynced()
-      onToast(`${loaded.characters.length}件のデータをGistから読み込みました`, 'success')
+      localStorage.setItem(TOKEN_KEY, token.trim())
+      localStorage.setItem(GIST_ID_KEY, gistId.trim())
+      const gistData = await loadFromGist(token.trim(), gistId.trim())
+      saveData({ ...gistData, version: DATA_VERSION }, false)
+      const remote = await loadScheduleFromGist(token.trim(), gistId.trim())
+      if (remote) saveScheduleData(mergeSchedule(loadScheduleData(), remote))
+      window.dispatchEvent(new CustomEvent('gist-synced'))
+      showStatus('Gistから読み込みました', true)
       setOpen(false)
     } catch (e) {
-      onToast(e instanceof Error ? e.message : 'Gist読み込みに失敗しました', 'error')
+      showStatus(e instanceof Error ? e.message : 'Gist読み込みに失敗しました', false)
     } finally {
       setLoading(false)
     }
@@ -181,12 +183,18 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="px-3 py-2 text-sm text-white/90 border border-white/40 rounded-full hover:bg-white/20 transition-colors min-h-[40px]"
+        className="px-3 py-1.5 text-sm font-medium text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-all"
         title="クロスデバイス同期（GitHub Gist）"
-        aria-label="データ同期設定"
       >
-        ☁ 同期
+        ☁
       </button>
+
+      {/* インライン状態通知 */}
+      {status && (
+        <span className={`text-xs px-2 ${status.ok ? 'text-green-600' : 'text-red-500'}`}>
+          {status.ok ? '✓' : '✗'} {status.msg}
+        </span>
+      )}
 
       {open && (
         <div
@@ -194,30 +202,24 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
           onClick={() => setOpen(false)}
         >
           <div
-            className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md mt-8 mb-8"
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md mt-8 mb-8"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
             aria-labelledby="sync-dialog-title"
           >
             <div className="p-6">
-              <h2 id="sync-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+              <h2 id="sync-dialog-title" className="text-lg font-semibold text-slate-900 mb-1">
                 クロスデバイス同期
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-5 leading-relaxed">
-                GitHub Gist を使ってデバイス間でデータを共有します。
-                PAT と Gist ID は、各デバイスのブラウザにのみ保存されます。
-                設定済みの場合はページを開くと自動読み込み、データ変更後3秒で自動保存します。
+              <p className="text-xs text-slate-500 mb-5 leading-relaxed">
+                GitHub Gist を使ってデバイス間でデータを共有します。キャラクターとカレンダーをまとめて同期します。
+                設定済みの場合はページを開くと自動読み込み、タブを閉じると自動保存します。
               </p>
 
-              {/* PAT入力 */}
               <div className="mb-4">
-                <label
-                  htmlFor="gist-token"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >
-                  GitHub Personal Access Token
-                  <span className="ml-1 text-red-500">*</span>
+                <label htmlFor="gist-token" className="block text-sm font-medium text-slate-700 mb-1">
+                  GitHub Personal Access Token<span className="ml-1 text-red-500">*</span>
                 </label>
                 <input
                   id="gist-token"
@@ -225,22 +227,17 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
                   value={token}
                   onChange={(e) => setToken(e.target.value)}
                   placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400 font-mono"
                   autoComplete="off"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-slate-400">
                   GitHub Settings → Developer settings → Personal access tokens → Gistスコープを付与
                 </p>
               </div>
 
-              {/* Gist ID入力 */}
               <div className="mb-6">
-                <label
-                  htmlFor="gist-id"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                >
-                  Gist ID
-                  <span className="ml-2 text-xs text-gray-500 font-normal">（初回保存後に自動入力）</span>
+                <label htmlFor="gist-id" className="block text-sm font-medium text-slate-700 mb-1">
+                  Gist ID<span className="ml-2 text-xs text-slate-400 font-normal">（初回保存後に自動入力）</span>
                 </label>
                 <input
                   id="gist-id"
@@ -248,34 +245,29 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
                   value={gistId}
                   onChange={(e) => setGistId(e.target.value)}
                   placeholder="例：a1b2c3d4e5f6..."
-                  className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400 font-mono"
                 />
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  別デバイスで読み込む際は、保存後に表示されるIDを入力
-                </p>
               </div>
 
-              {/* 使い方ガイド */}
-              <div className="mb-5 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-xs text-indigo-800 dark:text-indigo-300 leading-relaxed">
+              <div className="mb-5 p-3 bg-sky-50 rounded-lg text-xs text-sky-800 leading-relaxed">
                 <p className="font-medium mb-1">初回設定手順</p>
                 <p>① PCで「Gistに保存」→ Gist IDをコピー</p>
                 <p>② スマホで同じPAT + Gist IDを入力して「Gistから読み込み」</p>
                 <p>③ 以降はページを開くと自動同期</p>
               </div>
 
-              {/* ボタン */}
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleSave}
                   disabled={loading}
-                  className="flex-1 px-4 py-2 text-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-lg transition-colors min-h-[44px]"
+                  className="flex-1 px-4 py-2 text-sm text-white bg-sky-600 hover:bg-sky-700 disabled:opacity-50 rounded-lg transition-colors"
                 >
                   {loading ? '処理中...' : gistId ? 'Gistに保存（上書き）' : 'Gistに保存（新規作成）'}
                 </button>
                 <button
                   onClick={handleLoad}
                   disabled={loading || !gistId.trim()}
-                  className="flex-1 px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 disabled:opacity-40 rounded-lg transition-colors min-h-[44px]"
+                  className="flex-1 px-4 py-2 text-sm text-sky-600 border border-sky-300 hover:bg-sky-50 disabled:opacity-40 rounded-lg transition-colors"
                 >
                   {loading ? '処理中...' : 'Gistから読み込み'}
                 </button>
@@ -283,7 +275,7 @@ export default function GistSync({ data, onSynced, onToast }: Props) {
 
               <button
                 onClick={() => setOpen(false)}
-                className="mt-3 w-full py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                className="mt-3 w-full py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors"
               >
                 閉じる
               </button>
