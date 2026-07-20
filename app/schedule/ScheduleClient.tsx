@@ -400,7 +400,7 @@ export default function ScheduleClient() {
               </Link>
               <Link
                 href={`/schedule/plot/new?yearId=${selectedYear.id}`}
-                className="px-4 py-2 text-sm font-medium text-[#21ecff] bg-[#21ecff]/10 border border-[#21ecff]/30 rounded-xl hover:bg-[#21ecff]/20 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-[#1fefec] bg-[#1fefec]/10 border border-[#1fefec]/30 rounded-xl hover:bg-[#1fefec]/20 transition-colors"
               >
                 + 出来事を追加
               </Link>
@@ -432,7 +432,7 @@ export default function ScheduleClient() {
                         </Link>
                         <Link
                           href={`/schedule/plot/new?yearId=${selectedYear.id}&monthId=${month.id}`}
-                          className="px-2.5 py-1 text-xs text-[#21ecff] border border-[#21ecff]/30 rounded-lg hover:bg-[#21ecff]/10 transition-colors"
+                          className="px-2.5 py-1 text-xs text-[#1fefec] border border-[#1fefec]/30 rounded-lg hover:bg-[#1fefec]/10 transition-colors"
                           onClick={(e) => e.stopPropagation()}
                         >
                           + 出来事

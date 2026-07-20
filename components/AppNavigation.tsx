@@ -22,7 +22,7 @@ export default function AppNavigation() {
   const isSchedule = normalized.startsWith('/schedule')
 
   const linkClass = (active: boolean) =>
-    `px-4 py-1.5 text-sm font-medium rounded-full transition-all ${
+    `px-3 py-1.5 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
       active
         ? 'bg-sky-500 text-white shadow-sm'
         : 'text-slate-500 hover:text-sky-600 hover:bg-sky-50'
