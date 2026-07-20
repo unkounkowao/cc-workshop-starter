@@ -105,7 +105,7 @@ export default function GistSync() {
   }
 
   // 読み込み（Gistを1回だけフェッチして全データを処理）
-  const autoLoad = (showFeedback = false) => {
+  const autoLoad = () => {
     const { savedToken, savedGistId } = getCredentials()
     if (!savedToken || !savedGistId) return
 
@@ -205,14 +205,9 @@ export default function GistSync() {
 
         if (changed) {
           window.dispatchEvent(new CustomEvent('gist-synced'))
-          if (showFeedback) showStatus('同期しました', true)
-        } else if (showFeedback) {
-          showStatus('最新の状態です', true)
         }
       })
-      .catch(() => {
-        if (showFeedback) showStatus('同期に失敗しました', false)
-      })
+      .catch(() => {})
   }
 
   useEffect(() => {
@@ -361,6 +356,12 @@ export default function GistSync() {
             </button>
           </div>
 
+          {status && (
+            <p className={`mt-3 text-xs text-center ${status.ok ? 'text-green-600' : 'text-red-500'}`}>
+              {status.ok ? '✓' : '✗'} {status.msg}
+            </p>
+          )}
+
           <button
             onClick={() => setOpen(false)}
             className="mt-3 w-full py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors"
@@ -376,7 +377,7 @@ export default function GistSync() {
     <>
       <button
         onClick={() => {
-          autoLoad(true)
+          autoLoad()
           setOpen(true)
         }}
         className="px-3 py-1.5 text-sm font-medium text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-full transition-all"
@@ -384,12 +385,6 @@ export default function GistSync() {
       >
         ☁
       </button>
-
-      {status && (
-        <span className={`text-xs px-2 ${status.ok ? 'text-green-600' : 'text-red-500'}`}>
-          {status.ok ? '✓' : '✗'} {status.msg}
-        </span>
-      )}
 
       {typeof document !== 'undefined' && createPortal(modal, document.body)}
     </>
