@@ -4,6 +4,7 @@ import {
   loadMemos,
   saveMemo,
   deleteMemo,
+  archiveMemo,
   updateMemoSortOrders,
   loadMemoData,
   saveMemoData,
@@ -26,6 +27,7 @@ export default function MemoPage() {
   const [memos, setMemos] = useState<Memo[]>([])
   const [characters, setCharacters] = useState<Character[]>([])
   const [mounted, setMounted] = useState(false)
+  const [tab, setTab] = useState<'main' | 'archive'>('main')
   const [content, setContent] = useState('')
   const [selectedCharIds, setSelectedCharIds] = useState<string[]>([])
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
@@ -154,6 +156,11 @@ export default function MemoPage() {
     reload()
   }, [reload])
 
+  const handleArchive = useCallback((id: string, archived: boolean) => {
+    archiveMemo(id, archived)
+    reload()
+  }, [reload])
+
   const handleDeleteConfirm = useCallback(() => {
     if (!deleteTarget) return
     deleteMemo(deleteTarget)
@@ -205,6 +212,11 @@ export default function MemoPage() {
 
   if (!mounted) return null
 
+  const mainMemos = memos.filter((m) => !m.archived)
+  const archiveMemos = memos
+    .filter((m) => m.archived)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+
   return (
     <div className="min-h-screen">
       {/* ヒーローバナー */}
@@ -224,31 +236,76 @@ export default function MemoPage() {
         </div>
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 py-4 pb-48 space-y-2">
-        {memos.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-3xl mb-2">📓</div>
-            <p className="text-slate-400 text-sm">まだメモがありません。<br />下のフォームから追加してください。</p>
-          </div>
-        )}
+      {/* タブ */}
+      <div className="max-w-3xl mx-auto px-4 pt-3 flex gap-2">
+        <button
+          onClick={() => setTab('main')}
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+            tab === 'main' ? 'bg-sky-500 text-white shadow-sm' : 'text-slate-500 hover:text-sky-600 hover:bg-sky-50'
+          }`}
+        >
+          メモ
+        </button>
+        <button
+          onClick={() => setTab('archive')}
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
+            tab === 'archive' ? 'bg-sky-500 text-white shadow-sm' : 'text-slate-500 hover:text-sky-600 hover:bg-sky-50'
+          }`}
+        >
+          アーカイブ {archiveMemos.length > 0 && <span className="ml-1 text-xs opacity-70">{archiveMemos.length}</span>}
+        </button>
+      </div>
 
-        {memos.map((memo, index) => (
-          <MemoCard
-            key={memo.id}
-            memo={memo}
-            index={index}
-            total={memos.length}
-            characters={characters}
-            onMoveUp={handleMoveUp}
-            onMoveDown={handleMoveDown}
-            onEdit={handleEdit}
-            onDelete={(id) => setDeleteTarget(id)}
-          />
-        ))}
+      <main className="max-w-3xl mx-auto px-4 py-4 pb-48 space-y-2">
+        {tab === 'main' ? (
+          mainMemos.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-3xl mb-2">📓</div>
+              <p className="text-slate-400 text-sm">まだメモがありません。<br />下のフォームから追加してください。</p>
+            </div>
+          ) : (
+            mainMemos.map((memo, index) => (
+              <MemoCard
+                key={memo.id}
+                memo={memo}
+                index={index}
+                total={mainMemos.length}
+                characters={characters}
+                onMoveUp={handleMoveUp}
+                onMoveDown={handleMoveDown}
+                onEdit={handleEdit}
+                onDelete={(id) => setDeleteTarget(id)}
+                onArchive={handleArchive}
+              />
+            ))
+          )
+        ) : (
+          archiveMemos.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-3xl mb-2">🗃️</div>
+              <p className="text-slate-400 text-sm">アーカイブされたメモはありません。</p>
+            </div>
+          ) : (
+            archiveMemos.map((memo, index) => (
+              <MemoCard
+                key={memo.id}
+                memo={memo}
+                index={index}
+                total={archiveMemos.length}
+                characters={characters}
+                onMoveUp={handleMoveUp}
+                onMoveDown={handleMoveDown}
+                onEdit={handleEdit}
+                onDelete={(id) => setDeleteTarget(id)}
+                onArchive={handleArchive}
+              />
+            ))
+          )
+        )}
       </main>
 
-      {/* 入力フォーム（固定） */}
-      <div className="sticky bottom-0 bg-white border-t border-sky-100 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+      {/* 入力フォーム（固定・メインタブのみ） */}
+      {tab === 'main' && <div className="sticky bottom-0 bg-white border-t border-sky-100 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <textarea
             value={content}
@@ -292,7 +349,7 @@ export default function MemoPage() {
             </button>
           </div>
         </div>
-      </div>
+      </div>}
 
       <Toast toasts={toasts} onRemove={removeToast} />
       <ConfirmDialog

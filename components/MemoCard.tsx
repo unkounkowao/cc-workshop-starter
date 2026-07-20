@@ -11,6 +11,7 @@ type Props = {
   onMoveDown: (id: string) => void
   onEdit: (memo: Memo) => void
   onDelete: (id: string) => void
+  onArchive: (id: string, archived: boolean) => void
 }
 
 function formatDate(iso: string): string {
@@ -27,6 +28,7 @@ export default function MemoCard({
   onMoveDown,
   onEdit,
   onDelete,
+  onArchive,
 }: Props) {
   const [editing, setEditing] = useState(false)
   const [editContent, setEditContent] = useState(memo.content)
@@ -119,22 +121,30 @@ export default function MemoCard({
         <time className="text-xs text-slate-300">{formatDate(memo.createdAt)}</time>
 
         <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+          {!memo.archived && (
+            <>
+              <button
+                onClick={() => onMoveUp(memo.id)}
+                disabled={index === 0}
+                className="text-xs text-slate-400 hover:text-sky-600 px-1.5 py-1 rounded disabled:opacity-20 transition-colors"
+                aria-label="上へ"
+              >↑</button>
+              <button
+                onClick={() => onMoveDown(memo.id)}
+                disabled={index === total - 1}
+                className="text-xs text-slate-400 hover:text-sky-600 px-1.5 py-1 rounded disabled:opacity-20 transition-colors"
+                aria-label="下へ"
+              >↓</button>
+              <button
+                onClick={() => setEditing(true)}
+                className="text-xs text-slate-400 hover:text-sky-600 px-2 py-1 rounded transition-colors"
+              >編集</button>
+            </>
+          )}
           <button
-            onClick={() => onMoveUp(memo.id)}
-            disabled={index === 0}
-            className="text-xs text-slate-400 hover:text-sky-600 px-1.5 py-1 rounded disabled:opacity-20 transition-colors"
-            aria-label="上へ"
-          >↑</button>
-          <button
-            onClick={() => onMoveDown(memo.id)}
-            disabled={index === total - 1}
-            className="text-xs text-slate-400 hover:text-sky-600 px-1.5 py-1 rounded disabled:opacity-20 transition-colors"
-            aria-label="下へ"
-          >↓</button>
-          <button
-            onClick={() => setEditing(true)}
-            className="text-xs text-slate-400 hover:text-sky-600 px-2 py-1 rounded transition-colors"
-          >編集</button>
+            onClick={() => onArchive(memo.id, !memo.archived)}
+            className="text-xs text-slate-400 hover:text-slate-600 px-2 py-1 rounded transition-colors"
+          >{memo.archived ? '戻す' : 'アーカイブ'}</button>
           <button
             onClick={() => onDelete(memo.id)}
             className="text-xs text-slate-400 hover:text-red-500 px-2 py-1 rounded transition-colors"

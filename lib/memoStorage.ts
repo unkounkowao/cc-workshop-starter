@@ -57,6 +57,13 @@ export function updateMemoSortOrders(orderedIds: string[]): void {
   saveMemoData(data)
 }
 
+export function archiveMemo(id: string, archived: boolean): void {
+  const data = loadMemoData()
+  const m = data.memos.find((m) => m.id === id)
+  if (m) { m.archived = archived; m.updatedAt = new Date().toISOString() }
+  saveMemoData(data)
+}
+
 export function getNextMemoSortOrder(): number {
   const data = loadMemoData()
   if (data.memos.length === 0) return 0

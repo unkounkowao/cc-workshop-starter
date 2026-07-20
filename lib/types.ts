@@ -57,6 +57,7 @@ export type Memo = {
   id: string
   content: string
   characterIds: string[]
+  archived?: boolean
   sortOrder: number
   createdAt: string
   updatedAt: string
