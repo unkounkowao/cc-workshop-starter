@@ -42,7 +42,7 @@ export default function ScheduleEntryCard({ entry }: Props) {
         aria-label={`${entry.title} の詳細を見る`}
       >
         {dateString && (
-          <span className="text-xs text-slate-400 shrink-0">{dateString}</span>
+          <span className="text-xs text-slate-700 shrink-0">{dateString}</span>
         )}
         <span className="text-sm text-slate-800 group-hover:text-sky-600 transition-colors truncate font-medium">
           {entry.title}
