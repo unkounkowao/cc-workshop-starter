@@ -376,7 +376,7 @@ export default function ScheduleEntryForm({
                 onChange={(e) => update('details', e.target.value)}
                 placeholder="詳しい内容・描写など"
                 className={textareaClass}
-                rows={type === 'plot' ? 16 : 5}
+                rows={16}
               />
             </div>
           </div>
