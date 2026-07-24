@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Toast from '@/components/Toast'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import ScheduleEntryCard from '@/components/ScheduleEntryCard'
+import ChapterView from '@/components/ChapterView'
 import {
   loadYears,
   saveYear,
@@ -198,6 +199,7 @@ export default function ScheduleClient() {
   const [editingYear, setEditingYear] = useState<StoryYear | null>(null)
   const [deleteYearTarget, setDeleteYearTarget] = useState<StoryYear | null>(null)
   const [toasts, setToasts] = useState<ToastType[]>([])
+  const [viewMode, setViewMode] = useState<'calendar' | 'chapter'>('calendar')
 
   const reloadAll = useCallback(() => {
     const updatedYears = loadYears()
@@ -374,6 +376,22 @@ export default function ScheduleClient() {
                 >
                   削除
                 </button>
+                <div className="flex border border-slate-200 rounded-lg overflow-hidden shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('calendar')}
+                    className={`px-2 py-1.5 text-xs transition-colors ${viewMode === 'calendar' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    カレンダー
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('chapter')}
+                    className={`px-2 py-1.5 text-xs transition-colors ${viewMode === 'chapter' ? 'bg-sky-500 text-white' : 'text-slate-600 hover:bg-slate-50'}`}
+                  >
+                    章まとめ
+                  </button>
+                </div>
               </>
             )}
 
@@ -383,7 +401,9 @@ export default function ScheduleClient() {
 
       {/* ===== コンテンツエリア ===== */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {!selectedYear ? (
+        {viewMode === 'chapter' && selectedYear ? (
+          <ChapterView selectedYear={selectedYear} allEntries={entries} />
+        ) : !selectedYear ? (
           <div className="text-center py-16">
             <p className="text-slate-500">年を選択してください</p>
           </div>

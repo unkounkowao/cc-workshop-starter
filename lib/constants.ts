@@ -105,6 +105,9 @@ export const PLOT_ROLE_SUGGESTIONS = [
   'キャラクター成長', '関係性変化', '世界観説明',
 ]
 
+export const CHAPTER_STORAGE_KEY = 'novel-chapter-data'
+export const CHAPTER_DATA_VERSION = 1
+
 export const DEFAULT_SCHEDULE_DATA = {
   version: SCHEDULE_DATA_VERSION,
   years: [] as import('./types').StoryYear[],

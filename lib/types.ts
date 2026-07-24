@@ -194,3 +194,24 @@ export type ScheduleImportResult = {
   entriesSkipped: number
   errors: string[]
 }
+
+// ===== 章まとめ =====
+
+export type ChapterBlock =
+  | { id: string; type: 'entry-ref'; entryId: string }
+  | { id: string; type: 'text'; content: string }
+
+export type StoryChapterNote = {
+  id: string
+  yearId: string
+  name: string
+  blocks: ChapterBlock[]
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type ChapterNoteData = {
+  version: number
+  chapters: StoryChapterNote[]
+}
