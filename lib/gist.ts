@@ -1,9 +1,10 @@
 import { validateImportData } from './validation'
-import type { CharacterSheetData, MemoData, ScheduleData } from './types'
+import type { CharacterSheetData, MemoData, ScheduleData, ChapterNoteData } from './types'
 
 const GIST_FILENAME = 'character-sheet-data.json'
 const MEMO_GIST_FILENAME = 'memo-data.json'
 const SCHEDULE_GIST_FILENAME = 'schedule-data.json'
+const CHAPTER_GIST_FILENAME = 'chapter-data.json'
 
 // Gistにデータを保存（新規作成またはPATCH）
 export async function saveToGist(
@@ -168,6 +169,62 @@ export async function saveScheduleToGist(
     if (status === 404) throw new Error('Gistが見つかりません')
     throw new Error(`スケジュール保存に失敗しました（${status}）`)
   }
+}
+
+// 章まとめデータをGistに保存
+export async function saveChapterToGist(
+  token: string,
+  gistId: string,
+  data: ChapterNoteData
+): Promise<void> {
+  const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/vnd.github+json',
+    },
+    body: JSON.stringify({
+      files: {
+        [CHAPTER_GIST_FILENAME]: {
+          content: JSON.stringify(data, null, 2),
+        },
+      },
+    }),
+  })
+  if (!response.ok) {
+    const status = response.status
+    if (status === 401) throw new Error('認証エラー：Personal Access Tokenを確認してください')
+    if (status === 404) throw new Error('Gistが見つかりません')
+    throw new Error(`章まとめ保存に失敗しました（${status}）`)
+  }
+}
+
+// Gistから章まとめデータをGETして返す
+export async function loadChapterFromGist(
+  token: string,
+  gistId: string
+): Promise<ChapterNoteData | null> {
+  const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+    },
+    cache: 'no-store',
+  })
+  if (!response.ok) return null
+
+  const gist = await response.json()
+  const file = gist.files[CHAPTER_GIST_FILENAME]
+  if (!file) return null
+
+  const content: string = file.truncated
+    ? await fetch(file.raw_url).then((r) => r.text())
+    : file.content
+
+  const parsed = JSON.parse(content)
+  if (!parsed || !Array.isArray(parsed.chapters)) return null
+  return parsed as ChapterNoteData
 }
 
 // GistからスケジュールデータをGETして返す

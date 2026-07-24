@@ -402,7 +402,7 @@ export default function ScheduleClient() {
       {/* ===== コンテンツエリア ===== */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         {viewMode === 'chapter' && selectedYear ? (
-          <ChapterView selectedYear={selectedYear} allEntries={entries} />
+          <ChapterView selectedYear={selectedYear} allEntries={entries} onToast={(msg, type) => addToast(setToasts, msg, type)} />
         ) : !selectedYear ? (
           <div className="text-center py-16">
             <p className="text-slate-500">年を選択してください</p>
