@@ -142,7 +142,7 @@ function TextBlock({
   }, [value])
 
   return (
-    <div className="relative group bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+    <div className="relative group bg-sky-50 border border-sky-200 rounded-lg px-3 py-2">
       <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         {onMoveUp && (
           <button type="button" onClick={onMoveUp} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="上へ">▲</button>
@@ -159,7 +159,7 @@ function TextBlock({
         placeholder="テキストを入力..."
         onChange={(e) => setValue(e.target.value)}
         onBlur={() => onUpdate(value)}
-        className="w-full bg-transparent text-sm text-slate-800 resize-none focus:outline-none placeholder-amber-400 pr-16"
+        className="w-full bg-transparent text-sm text-slate-800 resize-none focus:outline-none placeholder-sky-300 pr-16"
       />
     </div>
   )
@@ -386,7 +386,7 @@ function ChapterEditor({
         <button
           type="button"
           onClick={handleAddTextBlock}
-          className="px-3 py-1.5 text-xs text-amber-700 border border-amber-200 rounded-lg hover:bg-amber-50 transition-colors"
+          className="px-3 py-1.5 text-xs text-sky-700 border border-sky-200 rounded-lg hover:bg-sky-50 transition-colors"
         >
           + テキストを追加
         </button>
