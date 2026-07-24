@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import type { StoryYear, ScheduleEntry, StoryChapterNote, ChapterBlock } from '@/lib/types'
 import {
   loadChapters,
@@ -182,6 +183,7 @@ function EntryRefBlock({
   onMoveUp?: () => void
   onMoveDown?: () => void
 }) {
+  const router = useRouter()
   const entry = entries.find((e) => e.id === entryId)
 
   if (!entry) {
@@ -201,6 +203,8 @@ function EntryRefBlock({
   const monthName = year.months.find((m) => m.id === entry.monthId)?.name ?? ''
   const dayLabel = entry.startDay !== undefined ? ` ${entry.startDay}日` : ''
 
+  const detailPath = `/schedule/${isOfficial ? 'official' : 'plot'}/detail?id=${entry.id}`
+
   return (
     <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2">
       <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -208,13 +212,17 @@ function EntryRefBlock({
         {onMoveDown && <button type="button" onClick={onMoveDown} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="下へ">▼</button>}
         <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
       </div>
-      <div className="flex items-center gap-2 pr-16">
+      <button
+        type="button"
+        onClick={() => router.push(detailPath)}
+        className="flex items-center gap-2 pr-16 w-full text-left hover:opacity-70 transition-opacity"
+      >
         <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded font-medium ${isOfficial ? 'bg-blue-100 text-blue-700' : 'bg-teal-100 text-teal-700'}`}>
           {isOfficial ? '公式' : '出来事'}
         </span>
         <span className="text-xs text-slate-500 shrink-0">{monthName}{dayLabel}</span>
         <span className="text-sm font-medium text-slate-800 truncate">{entry.title}</span>
-      </div>
+      </button>
     </div>
   )
 }
