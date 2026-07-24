@@ -413,7 +413,7 @@ export default function ScheduleClient() {
               const monthEntries = sortEntriesInMonth(entriesByMonth[month.id] ?? [])
               return (
                 <section key={month.id} aria-labelledby={`month-${month.id}`}>
-                  <details open className="group">
+                  <details open className="group/details">
                     <summary
                       id={`month-${month.id}`}
                       className="flex items-center justify-between gap-2 cursor-pointer list-none select-none mb-3"
@@ -438,7 +438,7 @@ export default function ScheduleClient() {
                         >
                           + 出来事
                         </Link>
-                        <span className="text-slate-300 text-sm group-open:rotate-180 transition-transform" aria-hidden="true">▼</span>
+                        <span className="text-slate-300 text-sm group-open/details:rotate-180 transition-transform" aria-hidden="true">▼</span>
                       </div>
                     </summary>
 
