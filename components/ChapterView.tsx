@@ -122,15 +122,18 @@ function TextBlock({
   block,
   onUpdate,
   onDelete,
+  onMoveUp,
+  onMoveDown,
 }: {
   block: ChapterBlock & { type: 'text' }
   onUpdate: (content: string) => void
   onDelete: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
 }) {
   const [value, setValue] = useState(block.content)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // テキストエリアの高さを自動調整
   useEffect(() => {
     const el = textareaRef.current
     if (!el) return
@@ -140,14 +143,15 @@ function TextBlock({
 
   return (
     <div className="relative group bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-      <button
-        type="button"
-        onClick={onDelete}
-        className="absolute top-1.5 right-1.5 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 text-lg leading-none w-6 h-6 flex items-center justify-center"
-        aria-label="このブロックを削除"
-      >
-        ×
-      </button>
+      <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        {onMoveUp && (
+          <button type="button" onClick={onMoveUp} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="上へ">▲</button>
+        )}
+        {onMoveDown && (
+          <button type="button" onClick={onMoveDown} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="下へ">▼</button>
+        )}
+        <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
+      </div>
       <textarea
         ref={textareaRef}
         value={value}
@@ -155,7 +159,7 @@ function TextBlock({
         placeholder="テキストを入力..."
         onChange={(e) => setValue(e.target.value)}
         onBlur={() => onUpdate(value)}
-        className="w-full bg-transparent text-sm text-slate-800 resize-none focus:outline-none placeholder-amber-400 pr-6"
+        className="w-full bg-transparent text-sm text-slate-800 resize-none focus:outline-none placeholder-amber-400 pr-16"
       />
     </div>
   )
@@ -168,25 +172,26 @@ function EntryRefBlock({
   entries,
   year,
   onDelete,
+  onMoveUp,
+  onMoveDown,
 }: {
   entryId: string
   entries: ScheduleEntry[]
   year: StoryYear
   onDelete: () => void
+  onMoveUp?: () => void
+  onMoveDown?: () => void
 }) {
   const entry = entries.find((e) => e.id === entryId)
 
   if (!entry) {
     return (
       <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onDelete}
-          className="absolute top-1.5 right-1.5 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 text-lg leading-none w-6 h-6 flex items-center justify-center"
-          aria-label="このブロックを削除"
-        >
-          ×
-        </button>
+        <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onMoveUp && <button type="button" onClick={onMoveUp} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="上へ">▲</button>}
+          {onMoveDown && <button type="button" onClick={onMoveDown} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="下へ">▼</button>}
+          <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
+        </div>
         <span className="text-sm text-slate-400 italic">[削除済みエントリ]</span>
       </div>
     )
@@ -198,30 +203,17 @@ function EntryRefBlock({
 
   return (
     <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2">
-      <button
-        type="button"
-        onClick={onDelete}
-        className="absolute top-1.5 right-1.5 text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 text-lg leading-none w-6 h-6 flex items-center justify-center"
-        aria-label="このブロックを削除"
-      >
-        ×
-      </button>
-      <div className="flex items-center gap-2 pr-6">
-        <span
-          className={`shrink-0 text-xs px-1.5 py-0.5 rounded font-medium ${
-            isOfficial
-              ? 'bg-blue-100 text-blue-700'
-              : 'bg-teal-100 text-teal-700'
-          }`}
-        >
+      <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        {onMoveUp && <button type="button" onClick={onMoveUp} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="上へ">▲</button>}
+        {onMoveDown && <button type="button" onClick={onMoveDown} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="下へ">▼</button>}
+        <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
+      </div>
+      <div className="flex items-center gap-2 pr-16">
+        <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded font-medium ${isOfficial ? 'bg-blue-100 text-blue-700' : 'bg-teal-100 text-teal-700'}`}>
           {isOfficial ? '公式' : '出来事'}
         </span>
-        <span className="text-xs text-slate-500 shrink-0">
-          {monthName}{dayLabel}
-        </span>
-        <span className="text-sm font-medium text-slate-800 truncate">
-          {entry.title}
-        </span>
+        <span className="text-xs text-slate-500 shrink-0">{monthName}{dayLabel}</span>
+        <span className="text-sm font-medium text-slate-800 truncate">{entry.title}</span>
       </div>
     </div>
   )
@@ -316,6 +308,19 @@ function ChapterEditor({
     [chapter, onChange]
   )
 
+  const handleMoveBlock = useCallback(
+    (blockId: string, direction: 'up' | 'down') => {
+      const idx = chapter.blocks.findIndex((b) => b.id === blockId)
+      if (idx < 0) return
+      const newIdx = direction === 'up' ? idx - 1 : idx + 1
+      if (newIdx < 0 || newIdx >= chapter.blocks.length) return
+      const blocks = [...chapter.blocks]
+      ;[blocks[idx], blocks[newIdx]] = [blocks[newIdx], blocks[idx]]
+      onChange({ ...chapter, blocks, updatedAt: now() })
+    },
+    [chapter, onChange]
+  )
+
   return (
     <div className="flex flex-col h-full">
       {/* 章名 */}
@@ -337,7 +342,9 @@ function ChapterEditor({
             エントリを引用するか、テキストを追加してください
           </p>
         )}
-        {chapter.blocks.map((block) => {
+        {chapter.blocks.map((block, idx) => {
+          const isFirst = idx === 0
+          const isLast = idx === chapter.blocks.length - 1
           if (block.type === 'entry-ref') {
             return (
               <EntryRefBlock
@@ -346,6 +353,8 @@ function ChapterEditor({
                 entries={entries}
                 year={year}
                 onDelete={() => handleDeleteBlock(block.id)}
+                onMoveUp={isFirst ? undefined : () => handleMoveBlock(block.id, 'up')}
+                onMoveDown={isLast ? undefined : () => handleMoveBlock(block.id, 'down')}
               />
             )
           }
@@ -356,6 +365,8 @@ function ChapterEditor({
                 block={block}
                 onUpdate={(content) => handleUpdateTextBlock(block.id, content)}
                 onDelete={() => handleDeleteBlock(block.id)}
+                onMoveUp={isFirst ? undefined : () => handleMoveBlock(block.id, 'up')}
+                onMoveDown={isLast ? undefined : () => handleMoveBlock(block.id, 'down')}
               />
             )
           }
@@ -398,12 +409,17 @@ function ChapterEditor({
 type Props = {
   selectedYear: StoryYear
   allEntries: ScheduleEntry[]
+  onToast: (msg: string, type: 'success' | 'error') => void
 }
 
-export default function ChapterView({ selectedYear, allEntries }: Props) {
+export default function ChapterView({ selectedYear, allEntries, onToast }: Props) {
   const [chapters, setChapters] = useState<StoryChapterNote[]>([])
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
+  const reloadChapters = useCallback(() => {
+    const loaded = loadChapters(selectedYear.id)
+    setChapters(loaded)
+  }, [selectedYear.id])
 
   // 年が変わったらリロード
   useEffect(() => {

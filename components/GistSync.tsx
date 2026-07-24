@@ -1,12 +1,13 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { saveToGist, loadFromGist, saveScheduleToGist, loadScheduleFromGist, saveMemoToGist, loadMemoFromGist } from '@/lib/gist'
+import { saveToGist, loadFromGist, saveScheduleToGist, loadScheduleFromGist, saveMemoToGist, loadMemoFromGist, saveChapterToGist, loadChapterFromGist } from '@/lib/gist'
 import { validateImportData } from '@/lib/validation'
 import { loadData, saveData } from '@/lib/storage'
 import { loadScheduleData, saveScheduleData } from '@/lib/scheduleStorage'
 import { loadMemoData, saveMemoData, MEMO_DELETED_IDS_KEY, MEMO_VERSION } from '@/lib/memoStorage'
-import { DATA_VERSION, DELETED_IDS_KEY, SCHEDULE_DATA_VERSION, SCHEDULE_DELETED_IDS_KEY } from '@/lib/constants'
+import { loadChapterData, saveChapterData } from '@/lib/chapterStorage'
+import { DATA_VERSION, DELETED_IDS_KEY, SCHEDULE_DATA_VERSION, SCHEDULE_DELETED_IDS_KEY, CHAPTER_DATA_VERSION } from '@/lib/constants'
 
 const TOKEN_KEY = 'novel-cs-gist-token'
 const GIST_ID_KEY = 'novel-cs-gist-id'
@@ -69,6 +70,23 @@ function mergeMemo(
   return { version: MEMO_VERSION, memos }
 }
 
+// 章まとめデータのマージ
+function mergeChapter(
+  local: ReturnType<typeof loadChapterData>,
+  remote: ReturnType<typeof loadChapterData>
+) {
+  const localMap = new Map(local.chapters.map((c) => [c.id, c]))
+  const remoteMap = new Map(remote.chapters.map((c) => [c.id, c]))
+  const allIds = new Set([...localMap.keys(), ...remoteMap.keys()])
+  const chapters = Array.from(allIds).map((id) => {
+    const l = localMap.get(id)
+    const r = remoteMap.get(id)
+    if (l && r) return l.updatedAt >= r.updatedAt ? l : r
+    return (l ?? r)!
+  }).sort((a, b) => a.sortOrder - b.sortOrder)
+  return { version: CHAPTER_DATA_VERSION, chapters }
+}
+
 export default function GistSync() {
   const [open, setOpen] = useState(false)
   const [token, setToken] = useState('')
@@ -99,6 +117,7 @@ export default function GistSync() {
       await saveToGist(savedToken, savedGistId, loadData())
       await saveScheduleToGist(savedToken, savedGistId, loadScheduleData())
       await saveMemoToGist(savedToken, savedGistId, loadMemoData())
+      await saveChapterToGist(savedToken, savedGistId, loadChapterData())
     } catch { /* ignore */ } finally {
       savingRef.current = false
     }
@@ -203,6 +222,25 @@ export default function GistSync() {
           }
         } catch { /* ignore */ }
 
+        // 章まとめデータ
+        try {
+          const raw = await getContent('chapter-data.json')
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            if (parsed && Array.isArray(parsed.chapters)) {
+              const local = loadChapterData()
+              const merged = mergeChapter(local, parsed)
+              const hasChange =
+                merged.chapters.length !== local.chapters.length ||
+                merged.chapters.some((c) => { const l = local.chapters.find((x) => x.id === c.id); return !l || l.updatedAt !== c.updatedAt })
+              if (hasChange) {
+                saveChapterData(merged)
+                changed = true
+              }
+            }
+          }
+        } catch { /* ignore */ }
+
         if (changed) {
           window.dispatchEvent(new CustomEvent('gist-synced'))
         }
@@ -243,6 +281,7 @@ export default function GistSync() {
       const newId = await saveToGist(token.trim(), gistId.trim() || null, loadData())
       await saveScheduleToGist(token.trim(), newId, loadScheduleData())
       await saveMemoToGist(token.trim(), newId, loadMemoData())
+      await saveChapterToGist(token.trim(), newId, loadChapterData())
       setGistId(newId)
       localStorage.setItem(TOKEN_KEY, token.trim())
       localStorage.setItem(GIST_ID_KEY, newId)
@@ -270,6 +309,8 @@ export default function GistSync() {
       if (remoteSchedule) saveScheduleData(mergeSchedule(loadScheduleData(), remoteSchedule))
       const remoteMemo = await loadMemoFromGist(token.trim(), gistId.trim())
       if (remoteMemo) saveMemoData(mergeMemo(loadMemoData(), remoteMemo))
+      const remoteChapter = await loadChapterFromGist(token.trim(), gistId.trim())
+      if (remoteChapter) saveChapterData(mergeChapter(loadChapterData(), remoteChapter))
       window.dispatchEvent(new CustomEvent('gist-synced'))
       showStatus('Gistから読み込みました', true)
       setOpen(false)
@@ -297,7 +338,7 @@ export default function GistSync() {
             クロスデバイス同期
           </h2>
           <p className="text-xs text-slate-500 mb-5 leading-relaxed">
-            GitHub Gist を使ってデバイス間でデータを共有します。キャラクター・カレンダー・メモをまとめて同期します。
+            GitHub Gist を使ってデバイス間でデータを共有します。キャラクター・カレンダー・メモ・章まとめをまとめて同期します。
             設定済みの場合はページを開くと自動読み込み、タブを閉じると自動保存します。
           </p>
 
