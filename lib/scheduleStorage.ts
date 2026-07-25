@@ -163,6 +163,8 @@ export function sortEntriesInMonth(entries: ScheduleEntry[]): ScheduleEntry[] {
     } else if (b.startDay !== undefined) {
       return 1
     }
+    // 同日は公式→出来事の順
+    if (a.type !== b.type) return a.type === 'official' ? -1 : 1
     // 次にsortOrder
     return a.sortOrder - b.sortOrder
   })
