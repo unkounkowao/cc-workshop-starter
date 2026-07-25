@@ -25,14 +25,21 @@ function EntryPickerModal({
 }) {
   const [query, setQuery] = useState('')
 
-  const filtered = entries.filter((e) => {
-    if (!query.trim()) return true
-    const q = query.toLowerCase()
-    return (
-      e.title.toLowerCase().includes(q) ||
-      (e.summary ?? '').toLowerCase().includes(q)
-    )
-  })
+  const filtered = entries
+    .filter((e) => {
+      if (!query.trim()) return true
+      const q = query.toLowerCase()
+      return (
+        e.title.toLowerCase().includes(q) ||
+        (e.summary ?? '').toLowerCase().includes(q)
+      )
+    })
+    .sort((a, b) => {
+      const mA = year.months.find((m) => m.id === a.monthId)?.monthNumber ?? 0
+      const mB = year.months.find((m) => m.id === b.monthId)?.monthNumber ?? 0
+      if (mA !== mB) return mA - mB
+      return (a.startDay ?? 0) - (b.startDay ?? 0)
+    })
 
   function getMonthName(monthId: string): string {
     return year.months.find((m) => m.id === monthId)?.name ?? ''
@@ -145,12 +152,8 @@ function TextBlock({
   return (
     <div className="relative group bg-sky-50 border border-sky-200 rounded-lg px-3 py-2">
       <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        {onMoveUp && (
-          <button type="button" onClick={onMoveUp} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="上へ">▲</button>
-        )}
-        {onMoveDown && (
-          <button type="button" onClick={onMoveDown} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="下へ">▼</button>
-        )}
+        {onMoveUp && <button type="button" onClick={onMoveUp} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="上へ">▲</button>}
+        {onMoveDown && <button type="button" onClick={onMoveDown} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="下へ">▼</button>}
         <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
       </div>
       <textarea
@@ -173,15 +176,11 @@ function EntryRefBlock({
   entries,
   year,
   onDelete,
-  onMoveUp,
-  onMoveDown,
 }: {
   entryId: string
   entries: ScheduleEntry[]
   year: StoryYear
   onDelete: () => void
-  onMoveUp?: () => void
-  onMoveDown?: () => void
 }) {
   const router = useRouter()
   const entry = entries.find((e) => e.id === entryId)
@@ -189,9 +188,7 @@ function EntryRefBlock({
   if (!entry) {
     return (
       <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2">
-        <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          {onMoveUp && <button type="button" onClick={onMoveUp} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="上へ">▲</button>}
-          {onMoveDown && <button type="button" onClick={onMoveDown} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="下へ">▼</button>}
+        <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
         </div>
         <span className="text-sm text-slate-400 italic">[削除済みエントリ]</span>
@@ -207,9 +204,7 @@ function EntryRefBlock({
 
   return (
     <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2">
-      <div className="absolute top-1.5 right-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        {onMoveUp && <button type="button" onClick={onMoveUp} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="上へ">▲</button>}
-        {onMoveDown && <button type="button" onClick={onMoveDown} className="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center text-xs" aria-label="下へ">▼</button>}
+      <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
       </div>
       <button
@@ -361,8 +356,6 @@ function ChapterEditor({
                 entries={entries}
                 year={year}
                 onDelete={() => handleDeleteBlock(block.id)}
-                onMoveUp={isFirst ? undefined : () => handleMoveBlock(block.id, 'up')}
-                onMoveDown={isLast ? undefined : () => handleMoveBlock(block.id, 'down')}
               />
             )
           }
