@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import type { StoryYear, ScheduleEntry, StoryChapterNote, ChapterBlock } from '@/lib/types'
 import {
@@ -311,17 +311,41 @@ function ChapterEditor({
     [chapter, onChange]
   )
 
+  // エントリを日付順にソート、テキストは相対位置を維持
+  const displayBlocks = useMemo(() => {
+    const getScore = (entryId: string) => {
+      const entry = entries.find((e) => e.id === entryId)
+      if (!entry) return Infinity
+      const month = year.months.find((m) => m.id === entry.monthId)
+      return (month?.monthNumber ?? 0) * 1000 + (entry.startDay ?? 0)
+    }
+    const entryRefsSorted = chapter.blocks
+      .filter((b): b is ChapterBlock & { type: 'entry-ref' } => b.type === 'entry-ref')
+      .sort((a, b) => getScore(a.entryId) - getScore(b.entryId))
+    const result: ChapterBlock[] = []
+    let refIdx = 0
+    for (const block of chapter.blocks) {
+      if (block.type === 'entry-ref') {
+        if (refIdx < entryRefsSorted.length) result.push(entryRefsSorted[refIdx++])
+      } else {
+        result.push(block)
+      }
+    }
+    while (refIdx < entryRefsSorted.length) result.push(entryRefsSorted[refIdx++])
+    return result
+  }, [chapter.blocks, entries, year])
+
   const handleMoveBlock = useCallback(
     (blockId: string, direction: 'up' | 'down') => {
-      const idx = chapter.blocks.findIndex((b) => b.id === blockId)
+      const idx = displayBlocks.findIndex((b) => b.id === blockId)
       if (idx < 0) return
       const newIdx = direction === 'up' ? idx - 1 : idx + 1
-      if (newIdx < 0 || newIdx >= chapter.blocks.length) return
-      const blocks = [...chapter.blocks]
+      if (newIdx < 0 || newIdx >= displayBlocks.length) return
+      const blocks = [...displayBlocks]
       ;[blocks[idx], blocks[newIdx]] = [blocks[newIdx], blocks[idx]]
       onChange({ ...chapter, blocks, updatedAt: now() })
     },
-    [chapter, onChange]
+    [chapter, displayBlocks, onChange]
   )
 
   return (
@@ -340,14 +364,14 @@ function ChapterEditor({
 
       {/* ブロック一覧 */}
       <div className="space-y-2 flex-1">
-        {chapter.blocks.length === 0 && (
+        {displayBlocks.length === 0 && (
           <p className="text-sm text-slate-400 py-4 text-center">
             エントリを引用するか、テキストを追加してください
           </p>
         )}
-        {chapter.blocks.map((block, idx) => {
+        {displayBlocks.map((block, idx) => {
           const isFirst = idx === 0
-          const isLast = idx === chapter.blocks.length - 1
+          const isLast = idx === displayBlocks.length - 1
           if (block.type === 'entry-ref') {
             return (
               <EntryRefBlock
