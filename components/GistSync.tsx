@@ -279,12 +279,15 @@ export default function GistSync() {
     setLoading(true)
     try {
       const newId = await saveToGist(token.trim(), gistId.trim() || null, loadData())
-      await saveScheduleToGist(token.trim(), newId, loadScheduleData())
-      await saveMemoToGist(token.trim(), newId, loadMemoData())
-      await saveChapterToGist(token.trim(), newId, loadChapterData())
+      // キャラクター保存成功時点でIDを記録（以降の失敗でも再試行できるよう）
       setGistId(newId)
       localStorage.setItem(TOKEN_KEY, token.trim())
       localStorage.setItem(GIST_ID_KEY, newId)
+      const errors: string[] = []
+      await saveScheduleToGist(token.trim(), newId, loadScheduleData()).catch((e) => errors.push(e instanceof Error ? e.message : 'スケジュール保存失敗'))
+      await saveMemoToGist(token.trim(), newId, loadMemoData()).catch((e) => errors.push(e instanceof Error ? e.message : 'メモ保存失敗'))
+      await saveChapterToGist(token.trim(), newId, loadChapterData()).catch((e) => errors.push(e instanceof Error ? e.message : '章まとめ保存失敗'))
+      if (errors.length > 0) throw new Error(errors.join(' / '))
       showStatus('Gistに保存しました', true)
       setOpen(false)
     } catch (e) {
