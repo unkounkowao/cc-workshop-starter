@@ -18,6 +18,7 @@ export function loadChapterData(): ChapterNoteData {
 
 export function saveChapterData(data: ChapterNoteData): void {
   localStorage.setItem(CHAPTER_STORAGE_KEY, JSON.stringify(data))
+  window.dispatchEvent(new Event('local-data-changed'))
 }
 
 export function loadChapters(yearId: string): StoryChapterNote[] {

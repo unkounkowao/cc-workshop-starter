@@ -18,6 +18,7 @@ export function loadMemoData(): MemoData {
 
 export function saveMemoData(data: MemoData): void {
   localStorage.setItem(MEMO_STORAGE_KEY, JSON.stringify(data))
+  window.dispatchEvent(new Event('local-data-changed'))
 }
 
 export function loadMemos(): Memo[] {

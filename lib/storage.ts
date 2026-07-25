@@ -23,6 +23,7 @@ export function saveData(data: CharacterSheetData, updateModifiedAt = true): voi
     if (updateModifiedAt) {
       localStorage.setItem(LAST_MODIFIED_KEY, new Date().toISOString())
     }
+    window.dispatchEvent(new Event('local-data-changed'))
   } catch (e) {
     console.error('データの保存に失敗しました:', e)
     throw new Error('データの保存に失敗しました。ブラウザのストレージ容量を確認してください。')

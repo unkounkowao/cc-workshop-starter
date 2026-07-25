@@ -95,6 +95,7 @@ export default function GistSync() {
   const [status, setStatus] = useState<{ msg: string; ok: boolean } | null>(null)
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const savingRef = useRef(false)
+  const dataChangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const getCredentials = () => ({
     savedToken: localStorage.getItem(TOKEN_KEY) ?? '',
@@ -258,10 +259,18 @@ export default function GistSync() {
       }
     }
     document.addEventListener('visibilitychange', onVisibility)
+    // データ変更時に3秒後に自動保存
+    const onDataChanged = () => {
+      if (dataChangeTimerRef.current) clearTimeout(dataChangeTimerRef.current)
+      dataChangeTimerRef.current = setTimeout(() => { autoSave() }, 3000)
+    }
+    window.addEventListener('local-data-changed', onDataChanged)
     // 5分ごとにsave→loadの順で同期（スマホでvisibilitychangeが発火しない場合の保険）
     const poll = setInterval(() => { autoSave().then(() => autoLoad()) }, 300000)
     return () => {
       document.removeEventListener('visibilitychange', onVisibility)
+      window.removeEventListener('local-data-changed', onDataChanged)
+      if (dataChangeTimerRef.current) clearTimeout(dataChangeTimerRef.current)
       clearInterval(poll)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps

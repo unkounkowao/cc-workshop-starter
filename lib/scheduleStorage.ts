@@ -22,6 +22,7 @@ export function loadScheduleData(): ScheduleData {
 export function saveScheduleData(data: ScheduleData): void {
   try {
     localStorage.setItem(SCHEDULE_STORAGE_KEY, JSON.stringify(data))
+    window.dispatchEvent(new Event('local-data-changed'))
   } catch (e) {
     console.error('スケジュールデータの保存に失敗しました:', e)
     throw new Error('データの保存に失敗しました。ブラウザのストレージ容量を確認してください。')
