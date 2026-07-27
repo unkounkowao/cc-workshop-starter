@@ -64,7 +64,7 @@ export default function PlotDetailClient() {
     const y = loadYear(e.yearId)
     setYear(y)
     setCharacters(loadCharacters())
-    setYearEntries(loadEntries(e.yearId).filter((en) => en.type === 'plot'))
+    setYearEntries(loadEntries(e.yearId))
   }, [entryId])
 
   if (!mounted) return null
@@ -85,14 +85,14 @@ export default function PlotDetailClient() {
   const monthObj = year?.months.find((m) => m.id === entry.monthId)
   const dateStr = buildDateString(entry)
 
-  const sameTypeEntries = year
+  const allSortedEntries = year
     ? year.months.flatMap((m) =>
         sortEntriesInMonth(yearEntries.filter((e) => e.monthId === m.id))
       )
     : yearEntries
-  const currentIndex = sameTypeEntries.findIndex((e) => e.id === entry.id)
-  const prevEntry = currentIndex > 0 ? sameTypeEntries[currentIndex - 1] : null
-  const nextEntry = currentIndex < sameTypeEntries.length - 1 ? sameTypeEntries[currentIndex + 1] : null
+  const currentIndex = allSortedEntries.findIndex((e) => e.id === entry.id)
+  const prevEntry = currentIndex > 0 ? allSortedEntries[currentIndex - 1] : null
+  const nextEntry = currentIndex < allSortedEntries.length - 1 ? allSortedEntries[currentIndex + 1] : null
 
   const relatedCharacters = entry.relatedCharacterIds
     .map((id) => characters.find((c) => c.id === id))
@@ -265,7 +265,7 @@ export default function PlotDetailClient() {
         <nav className="flex items-center justify-between gap-4 pt-2" aria-label="前後のエントリへの移動">
           {prevEntry ? (
             <Link
-              href={`/schedule/plot/detail?id=${prevEntry.id}`}
+              href={`/schedule/${prevEntry.type === 'official' ? 'official' : 'plot'}/detail?id=${prevEntry.id}`}
               className="flex-1 flex flex-col items-start gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-[#1fefec]/30 hover:shadow-md transition-all group max-w-xs"
             >
               <span className="text-xs text-slate-400 group-hover:text-[#1fefec] transition-colors">← 前へ</span>
@@ -274,7 +274,7 @@ export default function PlotDetailClient() {
           ) : <div className="flex-1 max-w-xs" />}
           {nextEntry ? (
             <Link
-              href={`/schedule/plot/detail?id=${nextEntry.id}`}
+              href={`/schedule/${nextEntry.type === 'official' ? 'official' : 'plot'}/detail?id=${nextEntry.id}`}
               className="flex-1 flex flex-col items-end gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-[#1fefec]/30 hover:shadow-md transition-all group max-w-xs"
             >
               <span className="text-xs text-slate-400 group-hover:text-[#1fefec] transition-colors">次へ →</span>
