@@ -441,24 +441,20 @@ export default function ChapterView({ selectedYear, allEntries, onToast }: Props
   const [chapters, setChapters] = useState<StoryChapterNote[]>([])
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
-  const reloadChapters = useCallback(() => {
-    const loaded = loadChapters(selectedYear.id)
-    setChapters(loaded)
-  }, [selectedYear.id])
-
-  // 年が変わったらリロード
+  // 年が変わったとき / gist-synced でリロード
   useEffect(() => {
-    const loaded = loadChapters(selectedYear.id)
-    setChapters(loaded)
-    if (loaded.length > 0) {
+    const load = () => {
+      const loaded = loadChapters(selectedYear.id)
+      setChapters(loaded)
       setSelectedChapterId((prev) => {
-        // 既存の選択が有効なら維持
+        if (loaded.length === 0) return null
         if (prev && loaded.some((c) => c.id === prev)) return prev
         return loaded[0].id
       })
-    } else {
-      setSelectedChapterId(null)
     }
+    load()
+    window.addEventListener('gist-synced', load)
+    return () => window.removeEventListener('gist-synced', load)
   }, [selectedYear.id])
 
   const selectedChapter = chapters.find((c) => c.id === selectedChapterId) ?? null
@@ -565,14 +561,14 @@ export default function ChapterView({ selectedYear, allEntries, onToast }: Props
   )
 
   return (
-    <div className="flex gap-0 min-h-[60vh]">
+    <div className="flex flex-col sm:flex-row gap-0 min-h-[60vh]">
       {/* デスクトップ サイドバー */}
       <aside className="hidden sm:flex flex-col w-56 shrink-0 bg-white border border-slate-200 rounded-xl p-3 mr-4 self-start sticky top-20">
         {sidebar}
       </aside>
 
       {/* モバイル: 章選択ボタン + ドロワー */}
-      <div className="sm:hidden w-full mb-3">
+      <div className="sm:hidden mb-3">
         <button
           type="button"
           onClick={() => setShowMobileSidebar(true)}
