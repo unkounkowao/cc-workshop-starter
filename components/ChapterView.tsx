@@ -542,7 +542,7 @@ export default function ChapterView({ selectedYear, allEntries, onToast }: Props
                 e.stopPropagation()
                 handleDeleteChapter(chapter.id)
               }}
-              className="shrink-0 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 text-base leading-none"
+              className="shrink-0 text-slate-300 hover:text-red-500 transition-colors sm:opacity-0 sm:group-hover:opacity-100 text-base leading-none"
               aria-label={`${chapter.name}を削除`}
             >
               ×
