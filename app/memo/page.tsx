@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   loadMemos,
   saveMemo,
@@ -24,6 +24,7 @@ export default function MemoPage() {
   const [selectedCharIds, setSelectedCharIds] = useState<string[]>([])
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [toasts, setToasts] = useState<ToastType[]>([])
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -42,6 +43,18 @@ export default function MemoPage() {
     window.addEventListener('gist-synced', onSync)
     return () => window.removeEventListener('gist-synced', onSync)
   }, [reload])
+
+  const scrollToBottom = useCallback(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'main') {
+      setTimeout(scrollToBottom, 50)
+    }
+  }, [memos, tab, scrollToBottom])
 
   const handleAdd = () => {
     if (!content.trim()) return
@@ -103,15 +116,17 @@ export default function MemoPage() {
 
   if (!mounted) return null
 
-  const mainMemos = memos.filter((m) => !m.archived)
+  const mainMemos = memos
+    .filter((m) => !m.archived)
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
   const archiveMemos = memos
     .filter((m) => m.archived)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
 
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col h-screen">
       {/* ヒーローバナー */}
-      <div className="bg-gradient-to-br from-sky-400 to-sky-600 px-4 py-6 text-white">
+      <div className="bg-gradient-to-br from-sky-400 to-sky-600 px-4 py-6 text-white flex-none">
         <div className="max-w-3xl mx-auto">
           <p className="text-sky-100 text-xs font-medium tracking-widest uppercase mb-1">Novel Character Sheet</p>
           <h1 className="text-3xl font-bold tracking-tight">メモ</h1>
@@ -119,7 +134,7 @@ export default function MemoPage() {
       </div>
 
       {/* タブ */}
-      <div className="max-w-3xl mx-auto px-4 pt-3 flex gap-2">
+      <div className="max-w-3xl w-full mx-auto px-4 pt-3 flex gap-2 flex-none">
         <button
           onClick={() => setTab('main')}
           className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
@@ -138,7 +153,10 @@ export default function MemoPage() {
         </button>
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 py-4 pb-48 space-y-2">
+      <main
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto max-w-3xl w-full mx-auto px-4 py-4 space-y-2"
+      >
         {tab === 'main' ? (
           mainMemos.length === 0 ? (
             <div className="text-center py-12">
@@ -186,9 +204,9 @@ export default function MemoPage() {
         )}
       </main>
 
-      {/* 入力フォーム（固定・メインタブのみ） */}
+      {/* 入力フォーム（メインタブのみ） */}
       {tab === 'main' && (
-        <div className="sticky bottom-0 bg-white border-t border-sky-100 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
+        <div className="flex-none bg-white border-t border-sky-100 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]">
           <div className="max-w-3xl mx-auto px-4 py-3">
             <textarea
               value={content}
