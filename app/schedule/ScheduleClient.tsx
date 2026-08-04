@@ -199,7 +199,7 @@ export default function ScheduleClient() {
   const [editingYear, setEditingYear] = useState<StoryYear | null>(null)
   const [deleteYearTarget, setDeleteYearTarget] = useState<StoryYear | null>(null)
   const [toasts, setToasts] = useState<ToastType[]>([])
-  const [viewMode, setViewMode] = useState<'calendar' | 'chapter'>('calendar')
+  const [viewMode, setViewMode] = useState<'calendar' | 'chapter'>('chapter')
 
   const reloadAll = useCallback(() => {
     const updatedYears = loadYears()
