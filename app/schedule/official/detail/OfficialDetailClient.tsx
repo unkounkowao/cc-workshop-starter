@@ -227,6 +227,7 @@ export default function OfficialDetailClient() {
             )}
           </div>
 
+          {(entry.category || entry.location || entry.status || entry.importance) && (
           <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
               <dl className="space-y-4">
@@ -247,6 +248,7 @@ export default function OfficialDetailClient() {
               </dl>
             </div>
           </div>
+          )}
         </div>
 
         {/* Prev / Next */}

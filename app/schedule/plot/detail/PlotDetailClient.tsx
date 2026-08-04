@@ -239,6 +239,7 @@ export default function PlotDetailClient() {
             )}
           </div>
 
+          {(entry.category || entry.location || entry.importance || entry.plotRole) && (
           <div className="space-y-4">
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
               <dl className="space-y-4">
@@ -259,6 +260,7 @@ export default function PlotDetailClient() {
               </dl>
             </div>
           </div>
+          )}
         </div>
 
         {/* Prev / Next */}
