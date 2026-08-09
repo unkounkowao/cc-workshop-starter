@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Noto_Sans_JP } from 'next/font/google'
 import './globals.css'
 import AppNavigation from '@/components/AppNavigation'
+import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar'
 
 const notoSansJP = Noto_Sans_JP({
   subsets: ['latin'],
@@ -12,6 +13,7 @@ const notoSansJP = Noto_Sans_JP({
 export const metadata: Metadata = {
   title: 'キャラクターシート',
   description: '小説執筆用キャラクター設定管理アプリ',
+  manifest: '/cc-workshop-starter/manifest.json',
 }
 
 export const viewport = {
@@ -27,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="ja" translate="no" className={notoSansJP.className}>
       <body className="antialiased bg-sky-50 min-h-screen">
+        <ServiceWorkerRegistrar />
         <AppNavigation />
         {children}
       </body>
