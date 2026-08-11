@@ -173,11 +173,13 @@ function TextBlock({
 
 function EntryRefBlock({
   entryId,
+  chapterId,
   entries,
   year,
   onDelete,
 }: {
   entryId: string
+  chapterId: string
   entries: ScheduleEntry[]
   year: StoryYear
   onDelete: () => void
@@ -200,7 +202,7 @@ function EntryRefBlock({
   const monthName = year.months.find((m) => m.id === entry.monthId)?.name ?? ''
   const dayLabel = entry.startDay !== undefined ? ` ${entry.startDay}日` : ''
 
-  const detailPath = `/schedule/${isOfficial ? 'official' : 'plot'}/detail?id=${entry.id}`
+  const detailPath = `/schedule/${isOfficial ? 'official' : 'plot'}/detail?id=${entry.id}&chapterId=${chapterId}`
 
   return (
     <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2">
@@ -377,6 +379,7 @@ function ChapterEditor({
               <EntryRefBlock
                 key={block.id}
                 entryId={block.entryId}
+                chapterId={chapter.id}
                 entries={entries}
                 year={year}
                 onDelete={() => handleDeleteBlock(block.id)}

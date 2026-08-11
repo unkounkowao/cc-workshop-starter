@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import Toast from '@/components/Toast'
 import { loadEntry, loadYear, loadEntries, deleteEntry, sortEntriesInMonth } from '@/lib/scheduleStorage'
+import { loadChapterData } from '@/lib/chapterStorage'
 import { loadCharacters } from '@/lib/storage'
 import { generateId } from '@/lib/utils'
 import {
@@ -48,6 +49,7 @@ export default function OfficialDetailClient() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const entryId = searchParams.get('id') ?? ''
+  const chapterId = searchParams.get('chapterId') ?? ''
 
   const [entry, setEntry] = useState<ScheduleEntry | null>(null)
   const [year, setYear] = useState<StoryYear | null>(null)
@@ -93,9 +95,21 @@ export default function OfficialDetailClient() {
         sortEntriesInMonth(yearEntries.filter((e) => e.monthId === m.id))
       )
     : yearEntries
-  const currentIndex = allSortedEntries.findIndex((e) => e.id === entry.id)
-  const prevEntry = currentIndex > 0 ? allSortedEntries[currentIndex - 1] : null
-  const nextEntry = currentIndex < allSortedEntries.length - 1 ? allSortedEntries[currentIndex + 1] : null
+
+  // 章まとめから開いた場合はその章のエントリのみで前後ナビ
+  const navEntries = (() => {
+    if (!chapterId) return allSortedEntries
+    const chapter = loadChapterData().chapters.find((c) => c.id === chapterId)
+    if (!chapter) return allSortedEntries
+    const chapterEntryIds = new Set(
+      chapter.blocks.filter((b) => b.type === 'entry-ref').map((b) => (b as { type: 'entry-ref'; entryId: string }).entryId)
+    )
+    return allSortedEntries.filter((e) => chapterEntryIds.has(e.id))
+  })()
+
+  const currentIndex = navEntries.findIndex((e) => e.id === entry.id)
+  const prevEntry = currentIndex > 0 ? navEntries[currentIndex - 1] : null
+  const nextEntry = currentIndex < navEntries.length - 1 ? navEntries[currentIndex + 1] : null
 
   const relatedCharacters = entry.relatedCharacterIds
     .map((id) => characters.find((c) => c.id === id))
@@ -255,7 +269,7 @@ export default function OfficialDetailClient() {
         <nav className="flex items-center justify-between gap-4 pt-2" aria-label="前後のエントリへの移動">
           {prevEntry ? (
             <Link
-              href={`/schedule/${prevEntry.type === 'official' ? 'official' : 'plot'}/detail?id=${prevEntry.id}`}
+              href={`/schedule/${prevEntry.type === 'official' ? 'official' : 'plot'}/detail?id=${prevEntry.id}${chapterId ? `&chapterId=${chapterId}` : ''}`}
               className="flex-1 flex flex-col items-start gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-[#217dff]/40 hover:shadow-md transition-all group max-w-xs"
             >
               <span className="text-xs text-slate-400 group-hover:text-[#217dff] transition-colors">← 前へ</span>
@@ -264,7 +278,7 @@ export default function OfficialDetailClient() {
           ) : <div className="flex-1 max-w-xs" />}
           {nextEntry ? (
             <Link
-              href={`/schedule/${nextEntry.type === 'official' ? 'official' : 'plot'}/detail?id=${nextEntry.id}`}
+              href={`/schedule/${nextEntry.type === 'official' ? 'official' : 'plot'}/detail?id=${nextEntry.id}${chapterId ? `&chapterId=${chapterId}` : ''}`}
               className="flex-1 flex flex-col items-end gap-0.5 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 hover:border-[#217dff]/40 hover:shadow-md transition-all group max-w-xs"
             >
               <span className="text-xs text-slate-400 group-hover:text-[#217dff] transition-colors">次へ →</span>
