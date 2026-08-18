@@ -102,6 +102,20 @@ export default function GistSync() {
     savedGistId: localStorage.getItem(GIST_ID_KEY) ?? '',
   })
 
+  const handleTestToken = async () => {
+    if (!token.trim()) { showStatus('トークンを入力してください', false); return }
+    try {
+      const res = await fetch('https://api.github.com/user', {
+        headers: { Authorization: `Bearer ${token.trim()}`, Accept: 'application/vnd.github+json' },
+      })
+      if (!res.ok) { showStatus(`トークン無効（${res.status}）`, false); return }
+      const data = await res.json()
+      showStatus(`✓ GitHubユーザー: ${data.login}`, true)
+    } catch {
+      showStatus('接続失敗', false)
+    }
+  }
+
   const showStatus = (msg: string, ok: boolean) => {
     setStatus({ msg, ok })
     if (statusTimerRef.current) clearTimeout(statusTimerRef.current)
@@ -383,6 +397,11 @@ export default function GistSync() {
             <p className="mt-1 text-xs text-slate-400">
               GitHub Settings → Developer settings → Personal access tokens → Gistスコープを付与
             </p>
+            {token && (
+              <button onClick={handleTestToken} className="mt-1 text-xs text-sky-600 underline">
+                このトークンのGitHubユーザーを確認
+              </button>
+            )}
           </div>
 
           <div className="mb-6">
