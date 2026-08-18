@@ -116,6 +116,26 @@ export default function GistSync() {
     }
   }
 
+  const handleFindGist = async () => {
+    if (!token.trim()) { showStatus('トークンを入力してください', false); return }
+    try {
+      const res = await fetch('https://api.github.com/gists', {
+        headers: { Authorization: `Bearer ${token.trim()}`, Accept: 'application/vnd.github+json' },
+      })
+      if (!res.ok) { showStatus(`トークン無効（${res.status}）`, false); return }
+      const gists = await res.json()
+      const target = gists.find((g: { files: Record<string, unknown> }) => 'character-sheet-data.json' in g.files)
+      if (target) {
+        setGistId(target.id)
+        showStatus(`Gist IDを自動入力しました`, true)
+      } else {
+        showStatus('該当するGistが見つかりません', false)
+      }
+    } catch {
+      showStatus('接続失敗', false)
+    }
+  }
+
   const showStatus = (msg: string, ok: boolean) => {
     setStatus({ msg, ok })
     if (statusTimerRef.current) clearTimeout(statusTimerRef.current)
@@ -398,9 +418,14 @@ export default function GistSync() {
               GitHub Settings → Developer settings → Personal access tokens → Gistスコープを付与
             </p>
             {token && (
-              <button onClick={handleTestToken} className="mt-1 text-xs text-sky-600 underline">
-                このトークンのGitHubユーザーを確認
-              </button>
+              <span className="mt-1 flex gap-3">
+                <button onClick={handleTestToken} className="text-xs text-sky-600 underline">
+                  ユーザー確認
+                </button>
+                <button onClick={handleFindGist} className="text-xs text-sky-600 underline">
+                  Gist IDを自動取得
+                </button>
+              </span>
             )}
           </div>
 
