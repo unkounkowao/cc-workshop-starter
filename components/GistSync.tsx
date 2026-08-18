@@ -105,7 +105,7 @@ export default function GistSync() {
   const showStatus = (msg: string, ok: boolean) => {
     setStatus({ msg, ok })
     if (statusTimerRef.current) clearTimeout(statusTimerRef.current)
-    statusTimerRef.current = setTimeout(() => setStatus(null), 3000)
+    statusTimerRef.current = setTimeout(() => setStatus(null), ok ? 3000 : 8000)
   }
 
   // 保存（直列実行・排他制御で競合防止）
@@ -281,13 +281,24 @@ export default function GistSync() {
     setGistId(localStorage.getItem(GIST_ID_KEY) ?? '')
   }, [open])
 
+  // Gist URLまたはIDからGist IDを抽出（見えない文字も除去）
+  const extractGistId = (input: string): string => {
+    const trimmed = input.trim()
+    // https://gist.github.com/username/GISTID 形式のURLを処理
+    const match = trimmed.match(/gist\.github\.com\/[^/]+\/([a-f0-9]+)/i)
+    if (match) return match[1]
+    // 16進数以外の文字（ゼロ幅スペース等の不可視文字も含む）を除去
+    return trimmed.replace(/[^a-f0-9]/gi, '')
+  }
+
   const handleSave = async () => {
     if (!token.trim()) { showStatus('Personal Access Tokenを入力してください', false); return }
     if (savingRef.current) { showStatus('同期中です。しばらく待ってから再試行してください', false); return }
     savingRef.current = true
     setLoading(true)
     try {
-      const newId = await saveToGist(token.trim(), gistId.trim() || null, loadData())
+      const resolvedId = extractGistId(gistId)
+      const newId = await saveToGist(token.trim(), resolvedId || null, loadData())
       // キャラクター保存成功時点でIDを記録（以降の失敗でも再試行できるよう）
       setGistId(newId)
       localStorage.setItem(TOKEN_KEY, token.trim())
@@ -313,15 +324,17 @@ export default function GistSync() {
     if (!window.confirm('Gistのデータと現在のデータをマージします。よいですか？')) return
     setLoading(true)
     try {
+      const resolvedId = extractGistId(gistId)
+      setGistId(resolvedId)
       localStorage.setItem(TOKEN_KEY, token.trim())
-      localStorage.setItem(GIST_ID_KEY, gistId.trim())
-      const gistData = await loadFromGist(token.trim(), gistId.trim())
+      localStorage.setItem(GIST_ID_KEY, resolvedId)
+      const gistData = await loadFromGist(token.trim(), resolvedId)
       saveData({ ...gistData, version: DATA_VERSION }, false)
-      const remoteSchedule = await loadScheduleFromGist(token.trim(), gistId.trim())
+      const remoteSchedule = await loadScheduleFromGist(token.trim(), resolvedId)
       if (remoteSchedule) saveScheduleData(mergeSchedule(loadScheduleData(), remoteSchedule))
-      const remoteMemo = await loadMemoFromGist(token.trim(), gistId.trim())
+      const remoteMemo = await loadMemoFromGist(token.trim(), resolvedId)
       if (remoteMemo) saveMemoData(mergeMemo(loadMemoData(), remoteMemo))
-      const remoteChapter = await loadChapterFromGist(token.trim(), gistId.trim())
+      const remoteChapter = await loadChapterFromGist(token.trim(), resolvedId)
       if (remoteChapter) saveChapterData(mergeChapter(loadChapterData(), remoteChapter))
       window.dispatchEvent(new CustomEvent('gist-synced'))
       showStatus('Gistから読み込みました', true)
@@ -384,6 +397,11 @@ export default function GistSync() {
               placeholder="例：a1b2c3d4e5f6..."
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-400 font-mono"
             />
+            {gistId && (
+              <p className="mt-1 text-xs text-slate-400 font-mono">
+                文字数: {extractGistId(gistId).length}（16進数のみ）
+              </p>
+            )}
           </div>
 
           <div className="mb-5 p-3 bg-sky-50 rounded-lg text-xs text-sky-800 leading-relaxed">
