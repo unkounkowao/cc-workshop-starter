@@ -19,8 +19,9 @@ import {
   SCHEDULE_SELECTED_YEAR_KEY,
   DEFAULT_MONTH_NAMES,
 } from '@/lib/constants'
+import { loadCharacters } from '@/lib/storage'
 import { generateId, now } from '@/lib/utils'
-import type { StoryYear, ScheduleEntry, Toast as ToastType } from '@/lib/types'
+import type { StoryYear, ScheduleEntry, Toast as ToastType, Character } from '@/lib/types'
 
 // ===== 年フォームモーダル =====
 
@@ -195,6 +196,7 @@ export default function ScheduleClient() {
   const [years, setYears] = useState<StoryYear[]>([])
   const [selectedYearId, setSelectedYearId] = useState<string | null>(null)
   const [entries, setEntries] = useState<ScheduleEntry[]>([])
+  const [characters, setCharacters] = useState<Character[]>([])
   const [showYearModal, setShowYearModal] = useState(false)
   const [editingYear, setEditingYear] = useState<StoryYear | null>(null)
   const [deleteYearTarget, setDeleteYearTarget] = useState<StoryYear | null>(null)
@@ -220,6 +222,7 @@ export default function ScheduleClient() {
   // マウント時にデータ読み込み
   useEffect(() => {
     setMounted(true)
+    setCharacters(loadCharacters())
     const loadedYears = loadYears()
     setYears(loadedYears)
 
@@ -402,7 +405,7 @@ export default function ScheduleClient() {
       {/* ===== コンテンツエリア ===== */}
       <main className="max-w-7xl mx-auto px-4 py-6">
         {viewMode === 'chapter' && selectedYear ? (
-          <ChapterView selectedYear={selectedYear} allEntries={entries} onToast={(msg, type) => addToast(setToasts, msg, type)} />
+          <ChapterView selectedYear={selectedYear} allEntries={entries} characters={characters} onToast={(msg, type) => addToast(setToasts, msg, type)} />
         ) : !selectedYear ? (
           <div className="text-center py-16">
             <p className="text-slate-500">年を選択してください</p>
@@ -433,7 +436,7 @@ export default function ScheduleClient() {
               const monthEntries = sortEntriesInMonth(entriesByMonth[month.id] ?? [])
               return (
                 <section key={month.id} aria-labelledby={`month-${month.id}`}>
-                  <details open className="group/details">
+                  <details className="group/details">
                     <summary
                       id={`month-${month.id}`}
                       className="flex items-center justify-between gap-2 cursor-pointer list-none select-none mb-3"

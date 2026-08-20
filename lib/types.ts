@@ -197,8 +197,13 @@ export type ScheduleImportResult = {
 
 // ===== 章まとめ =====
 
+export type CharacterPsychology = {
+  characterId: string
+  psychology: string
+}
+
 export type ChapterBlock =
-  | { id: string; type: 'entry-ref'; entryId: string }
+  | { id: string; type: 'entry-ref'; entryId: string; characterPsychologies?: CharacterPsychology[] }
   | { id: string; type: 'text'; content: string }
 
 export type StoryChapterNote = {

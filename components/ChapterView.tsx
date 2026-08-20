@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import type { StoryYear, ScheduleEntry, StoryChapterNote, ChapterBlock } from '@/lib/types'
+import type { StoryYear, ScheduleEntry, StoryChapterNote, ChapterBlock, Character, CharacterPsychology } from '@/lib/types'
 import {
   loadChapters,
   saveChapter,
@@ -124,6 +124,56 @@ function EntryPickerModal({
   )
 }
 
+// ===== キャラクター選択モーダル =====
+
+function CharacterPickerModal({
+  characters,
+  excludeIds,
+  onSelect,
+  onClose,
+}: {
+  characters: Character[]
+  excludeIds: string[]
+  onSelect: (character: Character) => void
+  onClose: () => void
+}) {
+  const available = characters.filter((c) => !excludeIds.includes(c.id))
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-xs flex flex-col max-h-[70vh]"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+          <h2 className="text-base font-bold text-slate-800">キャラクターを追加</h2>
+          <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 text-2xl leading-none">×</button>
+        </div>
+        <div className="overflow-y-auto flex-1 p-3 space-y-1">
+          {available.length === 0 ? (
+            <p className="text-center text-sm text-slate-400 py-8">追加できるキャラクターがありません</p>
+          ) : (
+            available.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => onSelect(c)}
+                className="w-full text-left px-3 py-2 rounded-lg hover:bg-sky-50 transition-colors text-sm text-slate-800"
+              >
+                {c.name}
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ===== テキストブロック =====
 
 function TextBlock({
@@ -169,27 +219,49 @@ function TextBlock({
   )
 }
 
-// ===== エントリ参照ブロック =====
+// ===== エントリ参照ブロック（心理の動き付き）=====
 
 function EntryRefBlock({
-  entryId,
+  block,
   chapterId,
   entries,
   year,
+  characters,
   onDelete,
+  onUpdatePsychologies,
 }: {
-  entryId: string
+  block: ChapterBlock & { type: 'entry-ref' }
   chapterId: string
   entries: ScheduleEntry[]
   year: StoryYear
+  characters: Character[]
   onDelete: () => void
+  onUpdatePsychologies: (psychologies: CharacterPsychology[]) => void
 }) {
   const router = useRouter()
-  const entry = entries.find((e) => e.id === entryId)
+  const [showCharPicker, setShowCharPicker] = useState(false)
+  const entry = entries.find((e) => e.id === block.entryId)
+  const psychologies = block.characterPsychologies ?? []
+
+  const handleAddCharacter = (character: Character) => {
+    const updated = [...psychologies, { characterId: character.id, psychology: '' }]
+    onUpdatePsychologies(updated)
+    setShowCharPicker(false)
+  }
+
+  const handleRemoveCharacter = (characterId: string) => {
+    onUpdatePsychologies(psychologies.filter((p) => p.characterId !== characterId))
+  }
+
+  const handlePsychologyChange = (characterId: string, value: string) => {
+    onUpdatePsychologies(
+      psychologies.map((p) => p.characterId === characterId ? { ...p, psychology: value } : p)
+    )
+  }
 
   if (!entry) {
     return (
-      <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2">
+      <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2 flex items-center gap-2 mb-4">
         <div className="absolute top-1.5 right-1.5 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
           <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
         </div>
@@ -199,28 +271,119 @@ function EntryRefBlock({
   }
 
   const isOfficial = entry.type === 'official'
-  const monthName = year.months.find((m) => m.id === entry.monthId)?.name ?? ''
-  const dayLabel = entry.startDay !== undefined ? ` ${entry.startDay}日` : ''
-
   const detailPath = `/schedule/${isOfficial ? 'official' : 'plot'}/detail?id=${entry.id}&chapterId=${chapterId}`
+  const excludeIds = psychologies.map((p) => p.characterId)
 
   return (
-    <div className="relative group bg-white border border-slate-200 rounded-lg px-3 py-2">
-      <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button type="button" onClick={onDelete} className="text-slate-400 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none" aria-label="削除">×</button>
+    <div className="bg-white border border-slate-200 rounded-xl p-3 mb-4">
+      {/* エントリタイトル行 */}
+      <div className="flex items-center justify-between mb-2">
+        <button
+          type="button"
+          onClick={() => router.push(detailPath)}
+          className="text-sm font-semibold text-slate-800 hover:text-sky-600 transition-colors text-left flex-1 min-w-0 truncate"
+        >
+          {entry.title}
+        </button>
+        <div className="flex items-center gap-1 ml-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowCharPicker(true)}
+            className="text-xs text-slate-400 hover:text-sky-600 px-1.5 py-0.5 rounded border border-slate-200 hover:border-sky-300 transition-colors"
+            title="キャラクターを追加"
+          >
+            + キャラ
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="text-slate-300 hover:text-red-500 w-5 h-5 flex items-center justify-center text-base leading-none transition-colors"
+            aria-label="削除"
+          >
+            ×
+          </button>
+        </div>
       </div>
-      <button
-        type="button"
-        onClick={() => router.push(detailPath)}
-        className="flex items-center gap-2 pr-16 w-full text-left hover:opacity-70 transition-opacity"
-      >
-        <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded font-medium ${isOfficial ? 'bg-blue-100 text-blue-700' : 'bg-teal-100 text-teal-700'}`}>
-          {isOfficial ? '公式' : '出来事'}
-        </span>
-        <span className="text-xs text-slate-500 shrink-0">{monthName}{dayLabel}</span>
-        <span className="text-sm font-medium text-slate-800 truncate">{entry.title}</span>
-      </button>
+
+      {/* 心理の動き（横スクロール） */}
+      {psychologies.length > 0 && (
+        <div className="overflow-x-auto">
+          <div className="flex gap-2" style={{ minWidth: 'max-content' }}>
+            {psychologies.map((p) => {
+              const char = characters.find((c) => c.id === p.characterId)
+              if (!char) return null
+              return (
+                <div key={p.characterId} className="flex flex-col w-32 shrink-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-slate-600 truncate">{char.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCharacter(p.characterId)}
+                      className="text-slate-300 hover:text-red-400 w-4 h-4 flex items-center justify-center text-xs leading-none ml-1 shrink-0"
+                      aria-label={`${char.name}を削除`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <PsychologyTextarea
+                    value={p.psychology}
+                    onChange={(v) => handlePsychologyChange(p.characterId, v)}
+                    onBlur={(v) => handlePsychologyChange(p.characterId, v)}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {showCharPicker && (
+        <CharacterPickerModal
+          characters={characters}
+          excludeIds={excludeIds}
+          onSelect={handleAddCharacter}
+          onClose={() => setShowCharPicker(false)}
+        />
+      )}
     </div>
+  )
+}
+
+// ===== 心理テキスト入力（ローカルstate管理） =====
+
+function PsychologyTextarea({
+  value,
+  onChange,
+  onBlur,
+}: {
+  value: string
+  onChange: (v: string) => void
+  onBlur: (v: string) => void
+}) {
+  const [local, setLocal] = useState(value)
+  const ref = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    setLocal(value)
+  }, [value])
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [local])
+
+  return (
+    <textarea
+      ref={ref}
+      value={local}
+      rows={3}
+      placeholder="心理の動き..."
+      onChange={(e) => { setLocal(e.target.value); onChange(e.target.value) }}
+      onBlur={() => onBlur(local)}
+      className="w-full text-xs text-slate-700 border border-slate-200 rounded-lg px-2 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-sky-300 placeholder-slate-300"
+    />
   )
 }
 
@@ -230,17 +393,18 @@ function ChapterEditor({
   chapter,
   entries,
   year,
+  characters,
   onChange,
 }: {
   chapter: StoryChapterNote
   entries: ScheduleEntry[]
   year: StoryYear
+  characters: Character[]
   onChange: (updated: StoryChapterNote) => void
 }) {
   const [showEntryPicker, setShowEntryPicker] = useState(false)
   const [chapterName, setChapterName] = useState(chapter.name)
 
-  // 章が切り替わったときに名前を同期
   useEffect(() => {
     setChapterName(chapter.name)
   }, [chapter.id, chapter.name])
@@ -261,6 +425,7 @@ function ChapterEditor({
         id: generateId(),
         type: 'entry-ref',
         entryId: entry.id,
+        characterPsychologies: [],
       }
       const updated: StoryChapterNote = {
         ...chapter,
@@ -313,7 +478,22 @@ function ChapterEditor({
     [chapter, onChange]
   )
 
-  // エントリを日付順にソート、テキストは相対位置を維持
+  const handleUpdatePsychologies = useCallback(
+    (blockId: string, psychologies: CharacterPsychology[]) => {
+      const updated: StoryChapterNote = {
+        ...chapter,
+        blocks: chapter.blocks.map((b) =>
+          b.id === blockId && b.type === 'entry-ref'
+            ? { ...b, characterPsychologies: psychologies }
+            : b
+        ),
+        updatedAt: now(),
+      }
+      onChange(updated)
+    },
+    [chapter, onChange]
+  )
+
   const displayBlocks = useMemo(() => {
     const getScore = (entryId: string) => {
       const entry = entries.find((e) => e.id === entryId)
@@ -365,7 +545,7 @@ function ChapterEditor({
       </div>
 
       {/* ブロック一覧 */}
-      <div className="space-y-2 flex-1">
+      <div className="flex-1">
         {displayBlocks.length === 0 && (
           <p className="text-sm text-slate-400 py-4 text-center">
             エントリを引用するか、テキストを追加してください
@@ -378,11 +558,13 @@ function ChapterEditor({
             return (
               <EntryRefBlock
                 key={block.id}
-                entryId={block.entryId}
+                block={block}
                 chapterId={chapter.id}
                 entries={entries}
                 year={year}
+                characters={characters}
                 onDelete={() => handleDeleteBlock(block.id)}
+                onUpdatePsychologies={(p) => handleUpdatePsychologies(block.id, p)}
               />
             )
           }
@@ -437,14 +619,15 @@ function ChapterEditor({
 type Props = {
   selectedYear: StoryYear
   allEntries: ScheduleEntry[]
+  characters: Character[]
   onToast: (msg: string, type: 'success' | 'error') => void
 }
 
-export default function ChapterView({ selectedYear, allEntries, onToast }: Props) {
+export default function ChapterView({ selectedYear, allEntries, characters, onToast }: Props) {
   const [chapters, setChapters] = useState<StoryChapterNote[]>([])
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
-  // 年が変わったとき / gist-synced でリロード
+
   useEffect(() => {
     const load = () => {
       const loaded = loadChapters(selectedYear.id)
@@ -462,7 +645,6 @@ export default function ChapterView({ selectedYear, allEntries, onToast }: Props
 
   const selectedChapter = chapters.find((c) => c.id === selectedChapterId) ?? null
 
-  // 章を追加
   const handleAddChapter = useCallback(() => {
     const newChapter: StoryChapterNote = {
       id: generateId(),
@@ -480,7 +662,6 @@ export default function ChapterView({ selectedYear, allEntries, onToast }: Props
     setShowMobileSidebar(false)
   }, [chapters.length, selectedYear.id])
 
-  // 章を削除
   const handleDeleteChapter = useCallback(
     (id: string) => {
       deleteChapter(id)
@@ -493,13 +674,11 @@ export default function ChapterView({ selectedYear, allEntries, onToast }: Props
     [selectedChapterId, selectedYear.id]
   )
 
-  // 章の変更を保存
   const handleChapterChange = useCallback((updated: StoryChapterNote) => {
     saveChapter(updated)
     setChapters((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
   }, [])
 
-  // 年のエントリのみ絞り込み
   const yearEntries = allEntries.filter((e) => e.yearId === selectedYear.id)
 
   // ===== サイドバー =====
@@ -633,6 +812,7 @@ export default function ChapterView({ selectedYear, allEntries, onToast }: Props
               chapter={selectedChapter}
               entries={yearEntries}
               year={selectedYear}
+              characters={characters}
               onChange={handleChapterChange}
             />
           </div>
