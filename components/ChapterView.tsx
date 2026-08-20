@@ -135,7 +135,7 @@ function PsychologyCell({
       placeholder="—"
       onChange={(e) => setLocal(e.target.value)}
       onBlur={() => onBlur(local)}
-      className="w-full text-xs text-slate-700 border border-slate-100 rounded-lg px-2 py-1.5 resize-none focus:outline-none focus:ring-1 focus:ring-sky-300 focus:border-sky-300 placeholder-slate-200 bg-slate-50 focus:bg-white transition-colors"
+      className="w-full text-sm text-slate-700 border border-slate-100 rounded-lg px-2 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-sky-300 focus:border-sky-300 placeholder-slate-200 bg-slate-50 focus:bg-white transition-colors"
     />
   )
 }
@@ -306,16 +306,16 @@ function ChapterEditor({
 
       {/* テーブル（横スクロール対応）*/}
       <div className="overflow-x-auto flex-1">
-        <table className="border-collapse" style={{ minWidth: characterIds.length > 0 ? `${200 + characterIds.length * 160}px` : '100%' }}>
+        <table className="border-collapse w-full" style={{ minWidth: characterIds.length > 0 ? `${240 + characterIds.length * 220}px` : '100%' }}>
           <thead>
             <tr className="bg-slate-50">
-              <th className="text-left px-3 py-2 text-xs font-semibold text-slate-500 border-b border-slate-200 w-48 min-w-[180px]">
+              <th className="text-left px-4 py-3 text-sm font-semibold text-slate-600 border-b border-slate-200 min-w-[220px]">
                 出来事
               </th>
               {characterIds.map((charId) => {
                 const char = characters.find((c) => c.id === charId)
                 return (
-                  <th key={charId} className="text-left px-3 py-2 text-xs font-semibold text-slate-500 border-b border-slate-200 min-w-[150px] w-40">
+                  <th key={charId} className="text-left px-4 py-3 text-sm font-semibold text-slate-600 border-b border-slate-200 min-w-[200px]">
                     <div className="flex items-center gap-1">
                       <span className="truncate">{char?.name ?? '(削除済み)'}</span>
                       <button
@@ -371,7 +371,7 @@ function ChapterEditor({
                 return (
                   <tr key={block.id} className="border-t border-slate-100 hover:bg-slate-50/50 transition-colors group">
                     {/* 出来事列 */}
-                    <td className="px-3 py-2 align-top">
+                    <td className="px-4 py-3 align-top">
                       <div className="flex items-start gap-1">
                         {entry ? (
                           <button
@@ -398,7 +398,7 @@ function ChapterEditor({
                     {characterIds.map((charId) => {
                       const psych = (block.characterPsychologies ?? []).find((p) => p.characterId === charId)
                       return (
-                        <td key={charId} className="px-3 py-2 align-top">
+                        <td key={charId} className="px-4 py-3 align-top">
                           <PsychologyCell
                             value={psych?.psychology ?? ''}
                             onBlur={(v) => handleUpdatePsychology(block.id, charId, v)}
