@@ -211,6 +211,7 @@ export type StoryChapterNote = {
   yearId: string
   name: string
   blocks: ChapterBlock[]
+  characterIds?: string[]
   sortOrder: number
   createdAt: string
   updatedAt: string
